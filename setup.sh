@@ -1,9 +1,9 @@
 ### VARIABLES TO CHANGE - START
-PROJECT_ID=
-PROJECT_NUMBER=
-SERVICE_NAME=
-GITHUB_ORG=
-GITHUB_REPO=
+PROJECT_ID='sangam-subedi-fisk'
+PROJECT_NUMBER='474058671686'
+SERVICE_NAME='ise-lab2-cicd-team-cuisine'
+GITHUB_ORG='CodePath-Tech-Exchange-CTEx'
+GITHUB_REPO='ise-lab2-cicd-team-cuisine'
 ### VARIABLES TO CHANGE - END
 
 # ----------- Set Up GCP Project ----------- #

@@ -1,6 +1,6 @@
 ### VARIABLES TO CHANGE - START
-PROJECT_ID=
-SERVICE_NAME=
+PROJECT_ID='sangam-subedi-fisk'
+SERVICE_NAME='ise-lab2-cicd-team-cuisine'
 ### VARIABLES TO CHANGE - END
 
 # ----------- Manual Deployment ------------ #
