@@ -1,12 +1,15 @@
-# TODO: Replace with your team name
+# Team Cuisine
 
 ## Our Team
 
-TODO: Replace with your team members
+Sangam Subedi
+Shavaughn Dunson
+Brian E. Ramirez Zea
+Kameron Benjamin
 
 # Setup
 
-One person needs to follow SETUP.md to complete setup. Ignore this if it is already done for you!
+- [x] One person needs to follow SETUP.md to complete setup. Ignore this if it is already done for you!
 
 # How to Run the Streamlit App
 
