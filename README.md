@@ -2,10 +2,10 @@
 
 ## Our Team
 
-Sangam Subedi
-Shavaughn Dunson
-Brian E. Ramirez Zea
-Kameron Benjamin
+Sangam Subedi  
+Shavaughn Dunson  
+Brian E. Ramirez Zea  
+Kameron Benjamin  
 
 # Setup
 
