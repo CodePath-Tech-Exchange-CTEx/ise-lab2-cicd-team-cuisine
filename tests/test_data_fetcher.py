@@ -2,6 +2,7 @@
 # tests/test_data_fetcher.py — tests for data_fetcher.py
 #############################################################################
 import unittest
+from data_fetcher import get_user_trades
 
 
 class TestDataFetcher(unittest.TestCase):

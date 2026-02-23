@@ -7,6 +7,7 @@
 # function other than the example.
 #############################################################################
 
+import streamlit as st
 from internals import create_component
 
 
@@ -30,8 +31,44 @@ def display_my_custom_component(value):
 
 
 def display_post(username, user_image, timestamp, content, post_image):
-    """Write a good docstring here."""
-    pass
+    """Render a simple post with optional image.
+
+    This is a minimal implementation used in the home feed and in unit tests.
+    The parameters mirror the data returned by :func:`get_user_posts`.
+    """
+    st.subheader(f"{username} – {timestamp}")
+    st.write(content)
+    if post_image:
+        st.image(post_image)
+
+
+def compute_trade_metrics(trades_list):
+    """Return aggregate statistics for a list of trades."""
+    total_trades = len(trades_list)
+    total_volume = sum(t.get('quantity', 0) for t in trades_list)
+    total_value = sum(t.get('quantity', 0) * t.get('price', 0) for t in trades_list)
+    return {
+        'total_trades': total_trades,
+        'total_volume': total_volume,
+        'total_value': total_value,
+    }
+
+
+def display_trade_summary(trades_list):
+    """Render a summary view and table for a user's trades.
+
+    Metrics are calculated via :func:`compute_trade_metrics`. The raw trade
+    data is then displayed with ``st.table``.
+    """
+    if not trades_list:
+        st.write("No trades available.")
+        return
+    metrics = compute_trade_metrics(trades_list)
+    st.header("Trade Summary")
+    st.metric("Total trades", metrics['total_trades'])
+    st.metric("Total volume", metrics['total_volume'])
+    st.metric("Total value", f"${metrics['total_value']:.2f}")
+    st.table(trades_list)
 
 
 def display_individual_bet_summary(
@@ -77,10 +114,16 @@ def display_individual_bet_summary(
 
 
 def display_recent_workouts(workouts_list):
-    """Write a good docstring here."""
-    pass
+    """Placeholder for recent-workouts widget; currently unused.
+
+    The function is defined so that imports in other files don't break while the
+    feature is not implemented.  It will only render text if the list is
+    non-empty.
+    """
+    if workouts_list:
+        st.write("Recent workouts placeholder")
 
 
 def display_genai_advice(timestamp, content, image):
-    """Write a good docstring here."""
-    pass
+    """Placeholder for GenAI advice component; currently unused."""
+    st.write(f"Advice ({timestamp}): {content}")

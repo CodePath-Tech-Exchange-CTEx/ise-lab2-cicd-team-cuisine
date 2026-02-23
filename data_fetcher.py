@@ -96,6 +96,34 @@ def get_user_workouts(user_id):
     return workouts
 
 
+def get_user_trades(user_id):
+    """Returns a list of mock trades for a given user.
+
+    Each trade dict contains:
+      - trade_id
+      - symbol
+      - action ("BUY" or "SELL")
+      - quantity
+      - price
+      - timestamp
+
+    This is a stand‑in for whatever back end you'll implement later.
+    """
+    trades = []
+    symbols = ['AAPL', 'GOOG', 'TSLA', 'MSFT']
+    actions = ['BUY', 'SELL']
+    for index in range(random.randint(1, 5)):
+        trades.append({
+            'trade_id': f'trade{index}',
+            'symbol': random.choice(symbols),
+            'action': random.choice(actions),
+            'quantity': random.randint(1, 100),
+            'price': round(random.uniform(10.0, 500.0), 2),
+            'timestamp': '2024-01-01 09:30:00',
+        })
+    return trades
+
+
 def get_user_profile(user_id):
     """Returns information about the given user.
 

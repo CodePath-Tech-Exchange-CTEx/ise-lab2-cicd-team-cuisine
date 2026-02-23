@@ -1,5 +1,15 @@
 # Team Cuisine
 
+> **Documentation:** our [GitHub Wiki](https://github.com/CodePath-Tech-Exchange-CTEx/ise-lab2-cicd-team-cuisine/wiki) contains expanded setup and development guides. Feel free to edit the wiki directly or by cloning the `.wiki` repository.
+
+## Recent updates
+
+- Dark theme toggle added via `.streamlit/config.toml`.
+- Added login mockup and sidebar navigation with "Home" and "Profile / Trade Summary" pages.
+- New backend helpers: `get_user_trades` returning mock trades, `compute_trade_metrics`, and `display_trade_summary` with associated UI; displayed on the profile page.
+- Corresponding unit tests introduced. Resolve merge conflicts in `tests/test_data_fetcher.py` and `tests/test_modules.py` before continuing the rebase.
+
+
 ## Our Team
 
 Sangam Subedi  
