@@ -248,7 +248,7 @@
     <div class="error-msg" id="amount-error">Please enter a valid amount greater than $0.00</div>
 
     <!-- Transaction button -->
-    <button id="txn-btn" onclick="submitTransaction()">Buy</button>
+    <button id="txn-btn" onclick="submitTransaction()">Submit</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -263,7 +263,6 @@
         document.getElementById('buy-btn').classList.toggle('active',  mode === 'Buy');
         document.getElementById('sell-btn').classList.toggle('active', mode === 'Sell');
         const txnBtn = document.getElementById('txn-btn');
-        txnBtn.textContent = mode;
         txnBtn.style.background = mode === 'Buy' ? '#27ae60' : '#e74c3c';
     }
 
