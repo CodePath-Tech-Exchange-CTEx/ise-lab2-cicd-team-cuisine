@@ -49,6 +49,13 @@ cd my-team-repository
 
 Run this command in the terminal to install the needed packages.
 
+### New in the prototype
+
+- The app now uses a **dark theme** and requires a simple mock login (enter any username/password).
+- After logging in, a sidebar appears with navigation options: **Home** and **Profile / Trade Summary**.
+- The Profile page shows a summary of all trades performed by the current user, including totals and a table of mock trade data.
+
+
 ```shell
 pip install -r requirements.txt
 ```
