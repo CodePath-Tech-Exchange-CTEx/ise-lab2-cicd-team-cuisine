@@ -1,0 +1,3 @@
+# App runtime dependencies (production + local run)
+# Add API clients, auth libs, etc. when chosen (Kalshi / Polymarket)
+streamlit

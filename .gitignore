@@ -1,3 +1,5 @@
+.gitignore
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -121,11 +123,12 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# Virtual environments (avoid committing venv files)
 .env
 .venv
-env/
+venv
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
@@ -160,3 +163,12 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Cursor editor
+.cursor/
+
+# macOS
+.DS_Store
+
+# Local env / secrets (e.g. API keys when Kalshi/Polymarket added)
+.env.local

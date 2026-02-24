@@ -1,1 +1,2 @@
-streamlit
+# Install base (app) dependencies. For dev, also run: pip install -r requirements/dev.txt
+-r requirements/base.txt
