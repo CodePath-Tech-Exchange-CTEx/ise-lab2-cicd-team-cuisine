@@ -7,6 +7,10 @@ Shavaughn Dunson
 Brian E. Ramirez Zea  
 Kameron Benjamin  
 
+## Guidelines
+
+Before you push, read **[CONTRIBUTING.md](CONTRIBUTING.md)** for commit message format, what not to commit, where mock data and tests live, and other team principles.
+
 # Setup
 
 - [x] One person needs to follow SETUP.md to complete setup. Ignore this if it is already done for you!
