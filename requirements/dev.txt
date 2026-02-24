@@ -1,0 +1,7 @@
+# Dev-only: testing, linting, formatting
+# Install with: pip install -r requirements/base.txt -r requirements/dev.txt
+-r base.txt
+
+pytest
+black
+ruff
