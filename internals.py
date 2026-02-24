@@ -6,7 +6,10 @@
 #
 #############################################################################
 
+import os
 import streamlit.components.v1 as components
+
+_COMPONENTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "custom_components")
 
 
 def load_html_file(file_path):
@@ -22,7 +25,7 @@ def safe_string(string):
 
 def create_component(data, component_name, height=None, width=None, scrolling=False):
     # Read the HTML content from the file
-    component_html = load_html_file(f'custom_components/{component_name}.html')
+    component_html = load_html_file(os.path.join(_COMPONENTS_DIR, f"{component_name}.html"))
 
     # Replace the templates with the specified data
     for key in data:
