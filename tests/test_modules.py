@@ -10,6 +10,8 @@ from modules import (
     display_individual_bet_summary,
     display_genai_advice,
     display_recent_workouts,
+    compute_trade_metrics,
+    display_trade_summary,
 )
 
 
