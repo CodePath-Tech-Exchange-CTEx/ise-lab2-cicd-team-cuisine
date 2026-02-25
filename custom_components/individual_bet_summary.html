@@ -1,306 +1,53 @@
-<!-- CSS -->
-<style>
-    .bet-card {
-        background: #2b2f3a;
-        border-radius: 16px;
-        padding: 2rem 2.5rem;
-        max-width: 680px;
-        margin: 0 auto;
-        font-family: 'Segoe UI', sans-serif;
-        color: #f0f0f0;
-    }
-
-    .bet-title {
-        text-align: center;
-        font-size: 2.4rem;
-        font-weight: 800;
-        margin-bottom: 1.4rem;
-        letter-spacing: -0.5px;
-    }
-
-    .bet-top-row {
-        display: flex;
-        gap: 1.5rem;
-        align-items: flex-start;
-        margin-bottom: 1.5rem;
-    }
-
-    .bet-image-box {
-        width: 200px;
-        min-width: 200px;
-        height: 170px;
-        border-radius: 10px;
-        overflow: hidden;
-        background: #4a4f5e;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #888;
-        font-size: 0.95rem;
-    }
-
-    .bet-image-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .bet-right {
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-        flex: 1;
-    }
-
-    /* Buy / Sell buttons */
-    .mode-btn {
-        width: 100%;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        border: 3px solid transparent;
-        font-size: 1rem;
-        font-weight: 700;
-        color: #fff;
-        cursor: pointer;
-        transition: border 0.15s, filter 0.15s;
-    }
-
-    .mode-btn:hover { filter: brightness(1.12); }
-
-    #buy-btn  { background: #27ae60; }
-    #sell-btn { background: #e74c3c; }
-
-    .mode-btn.active { border: 3px solid #ffffff; }
-
-    .rules-text {
-        font-size: 0.88rem;
-        color: #b0b7c3;
-        line-height: 1.6;
-        margin-top: 0.25rem;
-    }
-
-    .rules-text span { font-weight: 700; color: #d0d5df; }
-
-    /* Yes / No row */
-    .yes-no-row {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.25rem;
-    }
-
-    .yes-no-col {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.35rem;
-    }
-
-    .chance-label {
-        font-size: 0.9rem;
-        color: #c0c7d4;
-    }
-
-    .choice-btn {
-        width: 100%;
-        padding: 0.6rem 1rem;
-        border-radius: 8px;
-        border: 3px solid transparent;
-        font-size: 1rem;
-        font-weight: 700;
-        color: #fff;
-        cursor: pointer;
-        transition: border 0.15s, filter 0.15s;
-    }
-
-    .choice-btn:hover { filter: brightness(1.12); }
-
-    #yes-btn { background: #27ae60; }
-    #no-btn  { background: #e74c3c; }
-
-    .choice-btn.active { border: 3px solid #ffffff; }
-
-    /* Amount */
-    .amount-label {
-        font-weight: 700;
-        font-size: 1rem;
-        margin-bottom: 0.4rem;
-        color: #f0f0f0;
-    }
-
-    .amount-input-wrapper {
-        display: flex;
-        align-items: center;
-        background: #fff;
-        border-radius: 8px;
-        padding: 0.55rem 0.85rem;
-        margin-bottom: 1.25rem;
-    }
-
-    .amount-input-wrapper span {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #111;
-        margin-right: 4px;
-    }
-
-    #amount-input {
-        border: none;
-        outline: none;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #111;
-        width: 100%;
-        background: transparent;
-    }
-
-    .error-msg {
-        color: #e74c3c;
-        font-size: 0.8rem;
-        margin-top: -1rem;
-        margin-bottom: 0.8rem;
-        display: none;
-    }
-
-    /* Transaction button */
-    #txn-btn {
-        width: 100%;
-        padding: 0.75rem;
-        border-radius: 10px;
-        border: none;
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: #fff;
-        cursor: pointer;
-        transition: filter 0.15s;
-    }
-
-    #txn-btn:hover { filter: brightness(1.1); }
-
-    /* Success toast */
-    .toast {
-        display: none;
-        position: fixed;
-        bottom: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #27ae60;
-        color: #fff;
-        padding: 0.75rem 1.5rem;
-        border-radius: 10px;
-        font-weight: 700;
-        font-size: 1rem;
-        z-index: 9999;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        animation: fadeInOut 3s ease forwards;
-    }
-
-    @keyframes fadeInOut {
-        0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
-        15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-        75%  { opacity: 1; }
-        100% { opacity: 0; }
-    }
-</style>
-
-<!-- HTML -->
-<div class="bet-card">
-
-    <div class="bet-title">{{BET_NAME}}</div>
-
-    <div class="bet-top-row">
-        <!-- Image -->
-        <div class="bet-image-box" id="image-box">
-            {{IMAGE_HTML}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bet Summary</title>
+    <link rel="stylesheet" href="static/individual_bet_summary_css.css">
+</head>
+<body>
+    <div class="bet-card">
+        <div class="bet-title">{{BET_NAME}}</div>
+        <div class="bet-top-row">
+            <!-- Image -->
+            <div class="bet-image-box" id="image-box">
+                {{IMAGE_HTML}}
+            </div>
+            <!-- Buy / Sell + Description -->
+            <div class="bet-right">
+                <button class="mode-btn active" id="buy-btn"  onclick="setMode('Buy')">Buy</button>
+                <button class="mode-btn"        id="sell-btn" onclick="setMode('Sell')">Sell</button>
+                <p class="rules-text"><span>Description:</span> {{RULES}}</p>
+            </div>
         </div>
-
-        <!-- Buy / Sell + Description -->
-        <div class="bet-right">
-            <button class="mode-btn active" id="buy-btn"  onclick="setMode('Buy')">Buy</button>
-            <button class="mode-btn"        id="sell-btn" onclick="setMode('Sell')">Sell</button>
-            <p class="rules-text"><span>Description:</span> {{RULES}}</p>
+        <!-- Yes / No -->
+        <div class="yes-no-row">
+            <div class="yes-no-col">
+                <span class="chance-label">Chance: {{YES_PERCENT}}%</span>
+                <button class="choice-btn active" id="yes-btn" onclick="setChoice('Yes')">
+                    Yes ${{YES_VALUE}}
+                </button>
+            </div>
+            <div class="yes-no-col">
+                <span class="chance-label">Chance: {{NO_PERCENT}}%</span>
+                <button class="choice-btn" id="no-btn" onclick="setChoice('No')">
+                    No ${{NO_VALUE}}
+                </button>
+            </div>
         </div>
+        <!-- Amount -->
+        <div class="amount-label">Amount:</div>
+        <div class="amount-input-wrapper">
+            <span>$</span>
+            <input type="number" id="amount-input" min="0.01" step="0.01"
+                   placeholder="0.00" oninput="validateAmount()" />
+        </div>
+        <div class="error-msg" id="amount-error">Please enter a valid amount greater than $0.00</div>
+        <!-- Transaction button -->
+        <button id="txn-btn" onclick="submitTransaction()">Submit</button>
     </div>
-
-    <!-- Yes / No -->
-    <div class="yes-no-row">
-        <div class="yes-no-col">
-            <span class="chance-label">Chance: {{YES_PERCENT}}%</span>
-            <button class="choice-btn active" id="yes-btn" onclick="setChoice('Yes')">
-                Yes ${{YES_VALUE}}
-            </button>
-        </div>
-        <div class="yes-no-col">
-            <span class="chance-label">Chance: {{NO_PERCENT}}%</span>
-            <button class="choice-btn" id="no-btn" onclick="setChoice('No')">
-                No ${{NO_VALUE}}
-            </button>
-        </div>
-    </div>
-
-    <!-- Amount -->
-    <div class="amount-label">Amount:</div>
-    <div class="amount-input-wrapper">
-        <span>$</span>
-        <input type="number" id="amount-input" min="0.01" step="0.01"
-               placeholder="0.00" oninput="validateAmount()" />
-    </div>
-    <div class="error-msg" id="amount-error">Please enter a valid amount greater than $0.00</div>
-
-    <!-- Transaction button -->
-    <button id="txn-btn" onclick="submitTransaction()">Submit</button>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- JavaScript -->
-<script>
-    let mode   = 'Buy';
-    let choice = 'Yes';
-
-    function setMode(newMode) {
-        mode = newMode;
-        document.getElementById('buy-btn').classList.toggle('active',  mode === 'Buy');
-        document.getElementById('sell-btn').classList.toggle('active', mode === 'Sell');
-        const txnBtn = document.getElementById('txn-btn');
-        txnBtn.style.background = mode === 'Buy' ? '#27ae60' : '#e74c3c';
-    }
-
-    function setChoice(newChoice) {
-        choice = newChoice;
-        document.getElementById('yes-btn').classList.toggle('active', choice === 'Yes');
-        document.getElementById('no-btn').classList.toggle('active',  choice === 'No');
-    }
-
-    function validateAmount() {
-        const input = document.getElementById('amount-input');
-        const err   = document.getElementById('amount-error');
-        const val   = parseFloat(input.value);
-        const valid = !isNaN(val) && val > 0;
-        err.style.display = (!input.value || valid) ? 'none' : 'block';
-        return valid;
-    }
-
-    function submitTransaction() {
-        if (!validateAmount()) {
-            document.getElementById('amount-error').style.display = 'block';
-            return;
-        }
-        const amount = parseFloat(document.getElementById('amount-input').value).toFixed(2);
-        showToast(`✅ Transaction Successful! ${mode} ${choice} — $${amount}`);
-    }
-
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.style.display = 'block';
-        // Reset animation
-        toast.style.animation = 'none';
-        toast.offsetHeight; // reflow
-        toast.style.animation = 'fadeInOut 3s ease forwards';
-        setTimeout(() => { toast.style.display = 'none'; }, 3000);
-    }
-
-    // Set initial transaction button color
-    document.getElementById('txn-btn').style.background = '#27ae60';
-</script>
+    <div class="toast" id="toast"></div>
+    <script src="static/individual_bet_summary_js.js"></script>
+</body>
+</html>
