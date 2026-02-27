@@ -140,7 +140,7 @@ if __name__ == '__main__':
             'Navigation', ['Home', 'Profile / Trade Summary']
         )
         if page == 'Home':
-            display_app_page()
+            pass
         elif page == 'Profile / Trade Summary':
             st.title('Profile & Trade Summary')
             uid = st.session_state.get('username', userId)
