@@ -10,6 +10,8 @@ from modules import (
     display_individual_bet_summary,
     display_genai_advice,
     display_recent_workouts,
+    compute_trade_metrics,
+    display_trade_summary,
 )
 
 
@@ -176,6 +178,30 @@ class TestDisplayGenAiAdvice(unittest.TestCase):
 
 class TestDisplayRecentWorkouts(unittest.TestCase):
     """Tests the display_recent_workouts function."""
+
+
+class TestTradeSummary(unittest.TestCase):
+    """Unit tests for trade-related helpers."""
+
+    def test_compute_trade_metrics(self):
+        trades = [
+            {'trade_id': 't1', 'symbol': 'AAPL', 'action': 'BUY', 'quantity': 10, 'price': 100},
+            {'trade_id': 't2', 'symbol': 'TSLA', 'action': 'SELL', 'quantity': 5, 'price': 200},
+        ]
+        metrics = compute_trade_metrics(trades)
+        self.assertEqual(metrics['total_trades'], 2)
+        self.assertEqual(metrics['total_volume'], 15)
+        self.assertAlmostEqual(metrics['total_value'], 10 * 100 + 5 * 200)
+
+    def test_display_trade_summary_no_crash(self):
+        # simply calling the function should not raise any exception
+        try:
+            display_trade_summary([])
+            display_trade_summary([
+                {'trade_id': 'x', 'symbol': 'GOOG', 'action': 'BUY', 'quantity': 1, 'price': 50}
+            ])
+        except Exception as e:
+            self.fail(f"display_trade_summary raised unexpectedly: {e}")
 
     def test_foo(self):
         """Tests foo."""
