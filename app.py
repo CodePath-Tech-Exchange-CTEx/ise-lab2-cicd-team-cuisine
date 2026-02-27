@@ -8,8 +8,7 @@ import streamlit as st
 from data import get_available_bets
 
 from modules import (
-    display_individual_bet_summary
-    display_my_custom_component,
+    display_individual_bet_summary,
     display_post,
     display_genai_advice,
     display_individual_bet_summary,
