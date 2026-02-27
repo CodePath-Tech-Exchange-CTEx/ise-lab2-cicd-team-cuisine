@@ -1,5 +1,15 @@
 # Team Cuisine
 
+> **Documentation:** our [GitHub Wiki](https://github.com/CodePath-Tech-Exchange-CTEx/ise-lab2-cicd-team-cuisine/wiki) contains expanded setup and development guides. Feel free to edit the wiki directly or by cloning the `.wiki` repository.
+
+## Recent updates
+
+- Dark theme toggle added via `.streamlit/config.toml`.
+- Added login mockup and sidebar navigation with "Home" and "Profile / Trade Summary" pages.
+- New backend helpers: `get_user_trades` returning mock trades, `compute_trade_metrics`, and `display_trade_summary` with associated UI; displayed on the profile page.
+- Corresponding unit tests introduced. Resolve merge conflicts in `tests/test_data_fetcher.py` and `tests/test_modules.py` before continuing the rebase.
+
+
 ## Our Team
 
 Sangam Subedi  
@@ -38,6 +48,13 @@ cd my-team-repository
 ## Step 2: Run the Streamlit app.
 
 Run this command in the terminal to install the needed packages.
+
+### New in the prototype
+
+- The app now uses a **dark theme** and requires a simple mock login (enter any username/password).
+- After logging in, a sidebar appears with navigation options: **Home** and **Profile / Trade Summary**.
+- The Profile page shows a summary of all trades performed by the current user, including totals and a table of mock trade data.
+
 
 ```shell
 pip install -r requirements.txt

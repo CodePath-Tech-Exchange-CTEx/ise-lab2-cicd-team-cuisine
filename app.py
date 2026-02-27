@@ -6,7 +6,42 @@ import base64
 import streamlit as st
 
 from data import get_available_bets
-from modules import display_individual_bet_summary
+
+from modules import (
+    display_individual_bet_summary
+    display_my_custom_component,
+    display_post,
+    display_genai_advice,
+    display_individual_bet_summary,
+    display_recent_workouts,
+    display_trade_summary,
+)
+from data_fetcher import (
+    get_user_posts,
+    get_genai_advice,
+    get_user_profile,
+    get_user_sensor_data,
+    get_user_workouts,
+    get_user_trades,
+)
+
+userId = 'user1'  # fallback when no username has been entered
+
+
+def login():
+    """Simple mock login using session state."""
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
+    if not st.session_state.logged_in:
+        st.title('Welcome to SDS!')
+        st.subheader('Please log in')
+        username = st.text_input('Username')
+        password = st.text_input('Password', type='password')
+        if st.button('Log in'):
+            st.session_state.logged_in = True
+            st.session_state.username = username or userId
+        return False
+    return True
 
 st.set_page_config(layout="wide", page_title="AirBets")
 
@@ -20,6 +55,9 @@ def _logo_data_uri():
             return "data:image/svg+xml;base64," + base64.b64encode(f.read()).decode()
     except Exception:
         return ""
+    # An example of displaying a custom component called "my_custom_component"
+    # value = st.text_input('Enter your name')
+    # display_my_custom_component(value)
 
 _logo = _logo_data_uri()
 st.markdown(
@@ -95,3 +133,17 @@ else:
                     st.markdown(f"### {bet['bet_name']}")
                     st.caption(f"Yes **{bet['yes_percent']}%** · No **{bet['no_percent']}%**")
                     st.caption(f"${bet['yes_value']:.2f} / ${bet['no_value']:.2f}")
+# This is the starting point for your app.  The flow checks login state
+# first and then renders either the home feed or the profile/trade page.
+if __name__ == '__main__':
+    if login():
+        page = st.sidebar.radio(
+            'Navigation', ['Home', 'Profile / Trade Summary']
+        )
+        if page == 'Home':
+            display_app_page()
+        elif page == 'Profile / Trade Summary':
+            st.title('Profile & Trade Summary')
+            uid = st.session_state.get('username', userId)
+            trades = get_user_trades(uid)
+            display_trade_summary(trades)

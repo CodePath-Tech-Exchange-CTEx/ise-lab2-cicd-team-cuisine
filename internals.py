@@ -27,6 +27,26 @@ def create_component(data, component_name, height=None, width=None, scrolling=Fa
     # Read the HTML content from the file
     component_html = load_html_file(os.path.join(_COMPONENTS_DIR, f"{component_name}.html"))
 
+    # Inject CSS inline if a companion CSS file exists
+    try:
+        css = load_html_file(f'custom_components/static/{component_name}_css.css')
+        component_html = component_html.replace(
+            f'<link rel="stylesheet" href="static/{component_name}_css.css">',
+            f'<style>{css}</style>'
+        )
+    except FileNotFoundError:
+        pass
+
+    # Inject JS inline if a companion JS file exists
+    try:
+        js = load_html_file(f'custom_components/static/{component_name}_js.js')
+        component_html = component_html.replace(
+            f'<script src="static/{component_name}_js.js"></script>',
+            f'<script>{js}</script>'
+        )
+    except FileNotFoundError:
+        pass
+
     # Replace the templates with the specified data
     for key in data:
         data_placeholder = "{{" + str(key) + "}}"
