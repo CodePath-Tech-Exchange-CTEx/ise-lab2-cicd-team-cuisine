@@ -9,6 +9,10 @@
 #############################################################################
 
 import random
+try:
+    from google.cloud import bigquery
+except ImportError:
+    bigquery = None
 
 users = {
     'user1': {
@@ -173,3 +177,38 @@ def get_genai_advice(user_id):
         'content': advice,
         'image': image,
     }
+
+
+def get_bet_data():
+    """Retrieves bet data from the ISE dataset in BigQuery.
+    
+    Returns a list of dictionaries with keys corresponding to the arguments 
+    of display_individual_bet_summary.
+    """
+    if bigquery is None:
+        print("google-cloud-bigquery is not installed.")
+        return []
+        
+    client = bigquery.Client()
+    query = """
+        SELECT BetName, YesValue, NoValue, YesPercent, NoPercent, Rules, Image 
+        FROM `ISE.Bets`
+    """
+    
+    bets = []
+    try:
+        query_job = client.query(query)
+        for row in query_job.result():
+            bets.append({
+                'bet_name': row.BetName,
+                'yes_value': float(row.YesValue) if row.YesValue is not None else 0.0,
+                'no_value': float(row.NoValue) if row.NoValue is not None else 0.0,
+                'yes_percent': float(row.YesPercent) if row.YesPercent is not None else 0.0,
+                'no_percent': float(row.NoPercent) if row.NoPercent is not None else 0.0,
+                'rules': row.Rules,
+                'bet_image_link': row.Image,
+            })
+    except Exception as e:
+        print(f"Error fetching bets from BigQuery: {e}")
+        
+    return bets
