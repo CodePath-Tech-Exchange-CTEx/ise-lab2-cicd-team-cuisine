@@ -9,7 +9,8 @@
 
 import streamlit as st
 from internals import create_component
-
+import importlib.util
+import os
 
 # This one has been written for you as an example. You may change it as wanted.
 def display_my_custom_component(value):
@@ -125,5 +126,21 @@ def display_recent_workouts(workouts_list):
 
 
 def display_genai_advice(timestamp, content, image):
-    """Placeholder for GenAI advice component; currently unused."""
-    st.write(f"Advice ({timestamp}): {content}")
+    """
+    Calls the AI Advice page logic to display content within the dashboard.
+    """
+    page_path = os.path.join("pages", "3_AI_Advice.py")
+    
+    if os.path.exists(page_path):
+        # Dynamically load the module because the filename starts with a number
+        spec = importlib.util.spec_from_file_location("ai_advice_page", page_path)
+        ai_advice_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ai_advice_module)
+        
+        # Call the main function from 3_AI_Advice.py 
+        if hasattr(ai_advice_module, "main"):
+            ai_advice_module.main()
+        else:
+            st.error("Could not find a main() function in 3_AI_Advice.py")
+    else:
+        st.error(f"File not found: {page_path}")
