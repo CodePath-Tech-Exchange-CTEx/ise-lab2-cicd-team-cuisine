@@ -6,6 +6,7 @@ import base64
 import streamlit as st
 
 from data import get_available_bets
+from data.bets import get_bet_categories
 
 from modules import (
     display_post,
@@ -13,6 +14,7 @@ from modules import (
     display_individual_bet_summary,
     display_recent_workouts,
     display_trade_summary,
+    filter_bets_by_category,
 )
 from data_fetcher import (
     get_bet_data,
@@ -104,15 +106,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ---- Category filter (hardcoded, not functioning — display only) ----
-st.selectbox(
+# ---- Category filter ----
+category_options = ["All"] + get_bet_categories()
+selected_category = st.selectbox(
     "Category",
-    options=["All", "Crypto", "Politics", "Sports", "Other"],
+    options=category_options,
     index=0,
     key="category_filter",
     disabled=False,
 )
+
 bets = get_available_bets()
+bets = filter_bets_by_category(bets, selected_category)
 
 # ---- 4 columns, each filled top-to-bottom with cards ----
 if not bets:

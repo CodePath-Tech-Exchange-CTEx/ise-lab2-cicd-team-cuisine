@@ -12,6 +12,7 @@ from modules import (
     display_recent_workouts,
     compute_trade_metrics,
     display_trade_summary,
+    filter_bets_by_category,
 )
 
 
@@ -38,9 +39,14 @@ def get_data(mock_create) -> dict:
 class TestDisplayPost(unittest.TestCase):
     """Tests the display_post function."""
 
-    def test_foo(self):
-        """Tests foo."""
-        pass
+    @patch("modules.st.subheader")
+    @patch("modules.st.write")
+    @patch("modules.st.image")
+    def test_display_post_renders(self, mock_image, mock_write, mock_subheader):
+        display_post("alice", "https://example.com/avatar.png", "now", "Hello world", "https://example.com/post.png")
+        mock_subheader.assert_called_once_with("alice – now")
+        mock_write.assert_called_once_with("Hello world")
+        mock_image.assert_called_once_with("https://example.com/post.png")
 
 
 class TestDisplayIndividualBetSummary(unittest.TestCase):
@@ -171,13 +177,45 @@ class TestDisplayIndividualBetSummary(unittest.TestCase):
 class TestDisplayGenAiAdvice(unittest.TestCase):
     """Tests the display_genai_advice function."""
 
-    def test_foo(self):
-        """Tests foo."""
-        pass
+    @patch("modules.os.path.exists", return_value=False)
+    @patch("modules.st.error")
+    def test_genai_advice_file_missing(self, mock_error, mock_exists):
+        display_genai_advice("2026-01-01", "Some advice", None)
+        mock_error.assert_called_once()
 
 
 class TestDisplayRecentWorkouts(unittest.TestCase):
     """Tests the display_recent_workouts function."""
+
+    @patch("modules.st.write")
+    def test_display_recent_workouts_nonempty(self, mock_write):
+        display_recent_workouts([{"name": "run", "distance": 5}])
+        mock_write.assert_called_once_with("Recent workouts placeholder")
+
+    @patch("modules.st.write")
+    def test_display_recent_workouts_empty(self, mock_write):
+        display_recent_workouts([])
+        mock_write.assert_not_called()
+
+
+class TestFilterBetsByCategory(unittest.TestCase):
+    """Tests the category filtering helper in modules."""
+
+    def setUp(self):
+        self.bets = [
+            {"bet_id": "btc", "category": "Crypto"},
+            {"bet_id": "eth", "category": "Crypto"},
+            {"bet_id": "pres", "category": "Politics"},
+        ]
+
+    def test_filter_all_categories(self):
+        result = filter_bets_by_category(self.bets, "All")
+        self.assertEqual(result, self.bets)
+
+    def test_filter_specific_category(self):
+        result = filter_bets_by_category(self.bets, "Crypto")
+        self.assertEqual(len(result), 2)
+        self.assertTrue(all(bet["category"] == "Crypto" for bet in result))
 
 
 class TestTradeSummary(unittest.TestCase):
@@ -203,9 +241,6 @@ class TestTradeSummary(unittest.TestCase):
         except Exception as e:
             self.fail(f"display_trade_summary raised unexpectedly: {e}")
 
-    def test_foo(self):
-        """Tests foo."""
-        pass
 
 
 if __name__ == "__main__":

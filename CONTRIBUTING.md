@@ -22,7 +22,7 @@ Guidelines so the whole team stays aligned. Follow these when making changes and
   - **Env files and secrets:** `.env`, `.env.local`, or any file with API keys or credentials.
   - **Non-essential files:** Virtual envs (`.venv`, `venv/`, `env/`), `__pycache__/`, `.pytest_cache/`, IDE/project files (e.g. `.idea/`), OS junk (`.DS_Store`), or other local-only files.
 - **Rely on `.gitignore`.** If something shouldn’t be in the repo, add it to `.gitignore` and don’t force-add it.
-- **Run tests.** From project root with the project venv: `pytest tests/`. Fix failing tests before pushing.
+- **Run tests.** From project root with the project venv: `pytest tests/` (or `python -m pytest tests/` if pytest is not on PATH). Install pytest as needed (`pip install pytest`). Fix failing tests before pushing.
 - **Format and lint your code** so CI passes. From project root with the project venv:
   - Format: `black .` (or format on save in your editor). We use Black for style.
   - Lint: `ruff check .` or `flake8 .` (CI runs flake8). Fix reported errors before pushing.
