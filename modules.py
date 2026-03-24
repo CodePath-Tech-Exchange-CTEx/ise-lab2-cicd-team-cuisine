@@ -114,6 +114,13 @@ def display_individual_bet_summary(
     create_component(data, html_file_name, height=700)
 
 
+def filter_bets_by_category(bets_list, selected_category):
+    """Return bets matching selected category, or all bets if "All" or None."""
+    if selected_category is None or selected_category == "All":
+        return bets_list
+    return [bet for bet in bets_list if bet.get("category") == selected_category]
+
+
 def display_recent_workouts(workouts_list):
     """Placeholder for recent-workouts widget; currently unused.
 
