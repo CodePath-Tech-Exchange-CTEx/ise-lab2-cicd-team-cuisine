@@ -101,30 +101,62 @@ def get_user_workouts(user_id):
 
 
 def get_user_trades(user_id):
-    """Returns a list of mock trades for a given user.
-
-    Each trade dict contains:
-      - trade_id
-      - symbol
-      - action ("BUY" or "SELL")
-      - quantity
-      - price
-      - timestamp
-
-    This is a stand‑in for whatever back end you'll implement later.
+    """Returns a list of trades (active and past bets) for a given user from BigQuery.
+    
+    Combines records from ActivePurchasedBets and PastUserBets.
     """
+    if bigquery is None:
+        print("google-cloud-bigquery is not installed.")
+        return []
+
+    client = bigquery.Client()
+    query = """
+        SELECT 
+            a.BetID as trade_id, 
+            b.BetName as symbol, 
+            IF(a.UserTookYes, 'BUY YES', 'BUY NO') as action, 
+            1 as quantity, 
+            a.WagerAmount as price, 
+            CAST(NULL AS DATETIME) as timestamp 
+        FROM `ISE.ActivePurchasedBets` a
+        LEFT JOIN `ISE.Bets` b ON a.BetID = b.BetID
+        WHERE a.UserID = @user_id
+
+        UNION ALL
+
+        SELECT 
+            p.PastBetID as trade_id, 
+            b.BetName as symbol, 
+            p.Result as action, 
+            1 as quantity, 
+            p.Payout as price, 
+            p.Timestamp as timestamp 
+        FROM `ISE.PastUserBets` p
+        LEFT JOIN `ISE.Bets` b ON p.BetID = b.BetID
+        WHERE p.UserID = @user_id
+    """
+    
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("user_id", "STRING", user_id)
+        ]
+    )
+    
     trades = []
-    symbols = ['AAPL', 'GOOG', 'TSLA', 'MSFT']
-    actions = ['BUY', 'SELL']
-    for index in range(random.randint(1, 5)):
-        trades.append({
-            'trade_id': f'trade{index}',
-            'symbol': random.choice(symbols),
-            'action': random.choice(actions),
-            'quantity': random.randint(1, 100),
-            'price': round(random.uniform(10.0, 500.0), 2),
-            'timestamp': '2024-01-01 09:30:00',
-        })
+    try:
+        query_job = client.query(query, job_config=job_config)
+        for row in query_job.result():
+            trades.append({
+                'trade_id': row.trade_id if row.trade_id else 'N/A',
+                'symbol': row.symbol if row.symbol else 'Unknown Bet',
+                'action': row.action if row.action else 'UNKNOWN',
+                'quantity': row.quantity,
+                'price': float(row.price) if row.price is not None else 0.0,
+                'timestamp': row.timestamp.isoformat() if row.timestamp else 'N/A',
+            })
+    except Exception as e:
+        print(f"Error fetching trades from BigQuery: {e}")
+        
     return trades
 
 
@@ -179,27 +211,33 @@ def get_genai_advice(user_id):
     }
 
 
-def get_bet_data():
-    """Retrieves bet data from the ISE dataset in BigQuery.
+def get_bet_data(bet_id):
+    """Retrieves data for a specific bet from the ISE dataset in BigQuery.
     
-    Returns a list of dictionaries with keys corresponding to the arguments 
-    of display_individual_bet_summary.
+    Returns a dictionary with keys corresponding to the arguments 
+    of display_individual_bet_summary, or None if the bet is not found.
     """
     if bigquery is None:
         print("google-cloud-bigquery is not installed.")
-        return []
+        return None
         
     client = bigquery.Client()
     query = """
         SELECT BetName, YesValue, NoValue, YesPercent, NoPercent, Rules, Image 
         FROM `ISE.Bets`
+        WHERE BetID = @bet_id
     """
     
-    bets = []
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id)
+        ]
+    )
+    
     try:
-        query_job = client.query(query)
+        query_job = client.query(query, job_config=job_config)
         for row in query_job.result():
-            bets.append({
+            return {
                 'bet_name': row.BetName,
                 'yes_value': float(row.YesValue) if row.YesValue is not None else 0.0,
                 'no_value': float(row.NoValue) if row.NoValue is not None else 0.0,
@@ -207,8 +245,8 @@ def get_bet_data():
                 'no_percent': float(row.NoPercent) if row.NoPercent is not None else 0.0,
                 'rules': row.Rules,
                 'bet_image_link': row.Image,
-            })
+            }
     except Exception as e:
-        print(f"Error fetching bets from BigQuery: {e}")
+        print(f"Error fetching bet from BigQuery: {e}")
         
-    return bets
+    return None
