@@ -8,7 +8,6 @@ import streamlit as st
 from data import get_available_bets
 
 from modules import (
-    display_individual_bet_summary,
     display_post,
     display_genai_advice,
     display_individual_bet_summary,
@@ -16,6 +15,7 @@ from modules import (
     display_trade_summary,
 )
 from data_fetcher import (
+    get_bet_data,
     get_user_posts,
     get_genai_advice,
     get_user_profile,
@@ -82,18 +82,14 @@ if st.session_state.get("show_individual"):
         st.session_state.show_individual = False
         st.rerun()
     st.markdown("---")
-    bets = get_available_bets()
-    if bets:
-        bet = bets[0]
+    # Hardcoded ID to demonstrate fetching from the database.
+    bet = get_bet_data('bet001')
+    if bet:
         display_individual_bet_summary(
-            bet_name=bet["bet_name"],
-            bet_image_link=bet.get("bet_image_link"),
-            yes_value=bet["yes_value"],
-            no_value=bet["no_value"],
-            yes_percent=bet["yes_percent"],
-            no_percent=bet["no_percent"],
-            rules=bet["rules"],
+            **bet
         )
+    else:
+        st.error("Could not find data for bet with ID 'bet001'.")
     st.stop()
 
 # Columns fill top-to-bottom; minimal gap between cards
