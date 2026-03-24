@@ -82,15 +82,14 @@ if st.session_state.get("show_individual"):
         st.session_state.show_individual = False
         st.rerun()
     st.markdown("---")
-    # In a real app, the bet_id would be passed from the bet card that was clicked.
-    # For now, we'll use a hardcoded ID to demonstrate fetching from the database.
-    bet = get_bet_data('bet1')
+    # Hardcoded ID to demonstrate fetching from the database.
+    bet = get_bet_data('bet001')
     if bet:
         display_individual_bet_summary(
             **bet
         )
     else:
-        st.error("Could not find data for bet with ID 'bet1'.")
+        st.error("Could not find data for bet with ID 'bet001'.")
     st.stop()
 
 # Columns fill top-to-bottom; minimal gap between cards

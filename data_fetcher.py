@@ -8,6 +8,7 @@
 # testing earlier units.
 #############################################################################
 
+import os
 import random
 try:
     from google.cloud import bigquery
@@ -220,11 +221,18 @@ def get_bet_data(bet_id):
     if bigquery is None:
         print("google-cloud-bigquery is not installed.")
         return None
-        
+
+    project_id = os.environ.get('GCP_PROJECT')
+    if not project_id:
+        print("Warning: GCP_PROJECT environment variable not set. Using default project for BigQuery.")
+        table_name = '`ISE.Bets`'
+    else:
+        table_name = f'`{project_id}.ISE.Bets`'
+
     client = bigquery.Client()
-    query = """
+    query = f"""
         SELECT BetName, YesValue, NoValue, YesPercent, NoPercent, Rules, Image 
-        FROM `ISE.Bets`
+        FROM {table_name}
         WHERE BetID = @bet_id
     """
     
