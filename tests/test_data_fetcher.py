@@ -4,9 +4,10 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import datetime
+import decimal
 
-from data_fetcher import get_user_trades, get_bet_data
-
+from data_fetcher import get_user_trades, get_bet_data, add_active_bet
+ 
 
 # A mock row object to simulate BigQuery results
 class MockRow:
@@ -124,6 +125,68 @@ class TestDataFetcher(unittest.TestCase):
 
         bet_data = get_bet_data('bet1')
         self.assertIsNone(bet_data)
+
+    @patch('data_fetcher.os.environ.get', return_value='test-project')
+    @patch('data_fetcher.bigquery')
+    def test_add_active_bet_success(self, mock_bigquery, mock_environ):
+        """Should return True when a bet is successfully inserted."""
+        mock_client = MagicMock()
+        mock_query_job = MagicMock()
+        mock_query_job.errors = None
+        mock_query_job.num_dml_affected_rows = 1
+        
+        mock_client.query.return_value = mock_query_job
+        mock_bigquery.Client.return_value = mock_client
+
+        success = add_active_bet(
+            user_id='user1',
+            bet_id='bet001',
+            user_took_yes=True,
+            wager_amount=10.50
+        )
+
+        self.assertTrue(success)
+        mock_client.query.assert_called_once()
+        
+        # Check that the query parameters are correct
+        _, kwargs = mock_client.query.call_args
+        job_config = kwargs['job_config']
+        params = {p.name: p for p in job_config.query_parameters}
+        
+        self.assertEqual(params['user_id'].value, 'user1')
+        self.assertEqual(params['bet_id'].value, 'bet001')
+        self.assertEqual(params['user_took_yes'].value, True)
+        self.assertEqual(params['wager_amount'].value, decimal.Decimal('10.5'))
+
+    @patch('data_fetcher.os.environ.get', return_value='test-project')
+    @patch('data_fetcher.bigquery')
+    def test_add_active_bet_failure_no_rows_affected(self, mock_bigquery, mock_environ):
+        """Should return False if no rows are affected."""
+        mock_client = MagicMock()
+        mock_query_job = MagicMock()
+        mock_query_job.errors = None
+        mock_query_job.num_dml_affected_rows = 0 # Simulate no rows affected
+        
+        mock_client.query.return_value = mock_query_job
+        mock_bigquery.Client.return_value = mock_client
+
+        success = add_active_bet('user1', 'bet001', True, 10.50)
+        self.assertFalse(success)
+
+    @patch('data_fetcher.os.environ.get', return_value='test-project')
+    @patch('data_fetcher.bigquery')
+    def test_add_active_bet_failure_query_error(self, mock_bigquery, mock_environ):
+        """Should return False if the query has errors."""
+        mock_client = MagicMock()
+        mock_query_job = MagicMock()
+        mock_query_job.errors = [{'message': 'An error occurred'}]
+        mock_query_job.num_dml_affected_rows = None
+        
+        mock_client.query.return_value = mock_query_job
+        mock_bigquery.Client.return_value = mock_client
+
+        success = add_active_bet('user1', 'bet001', True, 10.50)
+        self.assertFalse(success)
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@
 
 import os
 import random
+import decimal
 try:
     from google.cloud import bigquery
 except ImportError:
@@ -159,6 +160,52 @@ def get_user_trades(user_id):
         print(f"Error fetching trades from BigQuery: {e}")
         
     return trades
+
+
+def add_active_bet(user_id, bet_id, user_took_yes, wager_amount):
+    """Adds a purchased bet to the ActivePurchasedBets table in BigQuery using a SQL INSERT statement."""
+    if bigquery is None:
+        print("google-cloud-bigquery is not installed.")
+        return False
+
+    client = bigquery.Client()
+    project_id = os.environ.get('GCP_PROJECT')
+    if not project_id:
+        print("Warning: GCP_PROJECT environment variable not set. Using default project for BigQuery.")
+        table_id = '`ISE.ActivePurchasedBets`'
+    else:
+        table_id = f'`{project_id}.ISE.ActivePurchasedBets`'
+
+    query = f"""
+        INSERT INTO {table_id} (UserID, BetID, UserTookYes, WagerAmount)
+        VALUES (@user_id, @bet_id, @user_took_yes, @wager_amount)
+    """
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+            bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id),
+            bigquery.ScalarQueryParameter("user_took_yes", "BOOL", user_took_yes),
+            bigquery.ScalarQueryParameter("wager_amount", "NUMERIC", decimal.Decimal(wager_amount)),
+        ]
+    )
+
+    try:
+        query_job = client.query(query, job_config=job_config)
+        query_job.result()  # Wait for the job to complete.
+
+        if query_job.errors:
+            print(f"Encountered errors while inserting rows: {query_job.errors}")
+            return False
+        
+        if query_job.num_dml_affected_rows is not None and query_job.num_dml_affected_rows > 0:
+            return True
+        else:
+            print("Insert statement completed but did not report any rows affected.")
+            return False
+    except Exception as e:
+        print(f"Error adding active bet to BigQuery with SQL INSERT: {e}")
+        return False
 
 
 def get_user_profile(user_id):

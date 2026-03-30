@@ -17,6 +17,7 @@ from modules import (
     filter_bets_by_category,
 )
 from data_fetcher import (
+    add_active_bet,
     get_bet_data,
     get_user_posts,
     get_genai_advice,
@@ -85,9 +86,11 @@ if st.session_state.get("show_individual"):
         st.rerun()
     st.markdown("---")
     # Hardcoded ID to demonstrate fetching from the database.
-    bet = get_bet_data('bet001')
+    bet_id = 'bet001'
+    bet = get_bet_data(bet_id)
     if bet:
         display_individual_bet_summary(
+            bet_id=bet_id,
             **bet
         )
     else:

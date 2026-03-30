@@ -4,36 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bet Summary</title>
-    <link rel="stylesheet" href="static/individual_bet_summary_css.css">
+    <link rel="stylesheet" href="static/style.css">
+    <script>
+        // Failsafe: Force Streamlit to expand the iframe immediately before external JS even loads
+        window.parent.postMessage({ isStreamlitMessage: true, type: "streamlit:setFrameHeight", height: 800 }, "*");
+    </script>
 </head>
 <body>
     <div class="bet-card">
-        <div class="bet-title">{{BET_NAME}}</div>
+        <div class="bet-title" id="bet-name"></div>
         <div class="bet-top-row">
             <!-- Image -->
             <div class="bet-image-box" id="image-box">
-                {{IMAGE_HTML}}
+                <!-- Image will be inserted by JS -->
             </div>
             <!-- Buy / Sell + Description -->
             <div class="bet-right">
                 <button class="mode-btn active" id="buy-btn"  onclick="setMode('Buy')">Buy</button>
                 <button class="mode-btn"        id="sell-btn" onclick="setMode('Sell')">Sell</button>
-                <p class="rules-text"><span>Description:</span> {{RULES}}</p>
+                <p class="rules-text"><span>Description:</span> <span id="rules-text"></span></p>
             </div>
         </div>
         <!-- Yes / No -->
         <div class="yes-no-row">
             <div class="yes-no-col">
-                <span class="chance-label">Chance: {{YES_PERCENT}}%</span>
-                <button class="choice-btn active" id="yes-btn" onclick="setChoice('Yes')">
-                    Yes ${{YES_VALUE}}
-                </button>
+                <span class="chance-label" id="yes-percent-label"></span>
+                <button class="choice-btn active" id="yes-btn" onclick="setChoice('Yes')"></button>
             </div>
             <div class="yes-no-col">
-                <span class="chance-label">Chance: {{NO_PERCENT}}%</span>
-                <button class="choice-btn" id="no-btn" onclick="setChoice('No')">
-                    No ${{NO_VALUE}}
-                </button>
+                <span class="chance-label" id="no-percent-label"></span>
+                <button class="choice-btn" id="no-btn" onclick="setChoice('No')"></button>
             </div>
         </div>
         <!-- Amount -->
@@ -48,6 +48,7 @@
         <button id="txn-btn" onclick="submitTransaction()">Submit</button>
     </div>
     <div class="toast" id="toast"></div>
-    <script src="static/individual_bet_summary_js.js"></script>
+    <script src="static/streamlit-component-lib.js?v=4"></script>
+    <script src="static/main.js?v=4"></script>
 </body>
 </html>

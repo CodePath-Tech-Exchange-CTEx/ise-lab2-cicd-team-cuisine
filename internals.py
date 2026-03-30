@@ -54,4 +54,4 @@ def create_component(data, component_name, height=None, width=None, scrolling=Fa
             data_placeholder, safe_string(str(data[key])))
 
     # Have streamlit render the component
-    components.html(component_html, width, height, scrolling)
+    return components.html(component_html, width, height, scrolling)
