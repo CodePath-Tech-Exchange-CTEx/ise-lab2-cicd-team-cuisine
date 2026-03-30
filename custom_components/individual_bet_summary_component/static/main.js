@@ -37,20 +37,8 @@ function submitTransaction() {
         action: "submit_transaction",
         choice: choice,
         amount: amount,
+        mode: mode,
     });
-
-    showToast(`✅ Transaction Submitted! ${mode} ${choice} — $${amount}`);
-}
-
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.style.display = 'block';
-    // Reset animation
-    toast.style.animation = 'none';
-    toast.offsetHeight; // reflow
-    toast.style.animation = 'fadeInOut 3s ease forwards';
-    setTimeout(() => { toast.style.display = 'none'; }, 3000);
 }
 
 /**

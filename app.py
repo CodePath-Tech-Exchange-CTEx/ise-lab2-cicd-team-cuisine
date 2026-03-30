@@ -17,7 +17,6 @@ from modules import (
     filter_bets_by_category,
 )
 from data_fetcher import (
-    add_active_bet,
     get_bet_data,
     get_user_posts,
     get_genai_advice,
@@ -27,7 +26,7 @@ from data_fetcher import (
     get_user_trades,
 )
 
-userId = 'user1'  # fallback when no username has been entered
+userId = 'user_1'  # fallback when no username has been entered
 
 
 def login():

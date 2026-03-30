@@ -4,7 +4,7 @@ Individual view: shows the full individual_bet_summary component (Shavaughn's de
 """
 import streamlit as st
 
-from data_fetcher import get_bet_data, add_active_bet
+from data_fetcher import get_bet_data
 from modules import display_individual_bet_summary
 
 st.set_page_config(page_title="Bet detail — AirBets", layout="wide")

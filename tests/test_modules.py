@@ -119,39 +119,43 @@ class TestDisplayIndividualBetSummary(unittest.TestCase):
 
     @patch("modules.st.toast")
     @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)
-    @patch("modules.add_active_bet")
+    @patch("modules.process_bet_transaction")
     @patch("modules._bet_summary_component")
-    def test_submit_success(self, mock_component, mock_add_bet, mock_session_state, mock_toast):
-        """On successful submission, add_active_bet is called and a toast is shown."""
-        mock_component.return_value = {'action': 'submit_transaction', 'choice': 'Yes', 'amount': '50'}
-        mock_add_bet.return_value = True
+    def test_submit_success(self, mock_component, mock_process_bet, mock_session_state, mock_toast):
+        """On successful submission, process_bet_transaction is called and a toast is shown."""
+        mock_component.return_value = {'action': 'submit_transaction', 'choice': 'Yes', 'amount': '50', 'mode': 'Buy'}
+        mock_process_bet.return_value = (True, "Successfully purchased the 'Yes' position on 'Test Bet' for $50.00.")
         mock_session_state.get.return_value = 'test_user'
 
         call_display(bet_id="bet_success")
 
-        mock_add_bet.assert_called_once_with(
+        mock_process_bet.assert_called_once_with(
             user_id='test_user',
             bet_id='bet_success',
             user_took_yes=True,
-            wager_amount='50'
+            wager_amount='50',
+            mode='Buy',
+            bet_name='Test Bet'
         )
-        mock_toast.assert_called_once_with("Transaction successfully logged to BigQuery!", icon="✅")
+        mock_toast.assert_called_once_with("Successfully purchased the 'Yes' position on 'Test Bet' for $50.00.", icon="✅")
 
-    @patch("modules.st.error")
+    @patch("modules.st.toast")
     @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)
-    @patch("modules.add_active_bet")
+    @patch("modules.process_bet_transaction")
     @patch("modules._bet_summary_component")
-    def test_submit_failure(self, mock_component, mock_add_bet, mock_session_state, mock_error):
-        """On failed submission, add_active_bet is called and an error is shown."""
-        mock_component.return_value = {'action': 'submit_transaction', 'choice': 'No', 'amount': '100'}
-        mock_add_bet.return_value = False
+    def test_submit_failure(self, mock_component, mock_process_bet, mock_session_state, mock_toast):
+        """On failed submission, process_bet_transaction is called and a toast is shown."""
+        mock_component.return_value = {'action': 'submit_transaction', 'choice': 'No', 'amount': '100', 'mode': 'Sell'}
+        mock_process_bet.return_value = (False, "You do not own the 'No' position on 'Test Bet' to sell.")
         mock_session_state.get.return_value = 'test_user'
 
         call_display(bet_id="bet_fail")
 
-        mock_add_bet.assert_called_once()
-        self.assertEqual(mock_add_bet.call_args.kwargs['user_took_yes'], False)
-        mock_error.assert_called_once_with("Transaction failed. Please try again.")
+        mock_process_bet.assert_called_once()
+        self.assertEqual(mock_process_bet.call_args.kwargs['bet_name'], 'Test Bet')
+        self.assertEqual(mock_process_bet.call_args.kwargs['user_took_yes'], False)
+        self.assertEqual(mock_process_bet.call_args.kwargs['mode'], 'Sell')
+        mock_toast.assert_called_once_with("You do not own the 'No' position on 'Test Bet' to sell.", icon="❌")
 
 
 class TestDisplayGenAiAdvice(unittest.TestCase):

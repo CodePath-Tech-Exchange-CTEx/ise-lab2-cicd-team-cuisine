@@ -10,7 +10,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import importlib.util
-from data_fetcher import add_active_bet
+from data_fetcher import process_bet_transaction
 import os
 
 _COMPONENT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "custom_components", "individual_bet_summary_component"))
@@ -127,18 +127,21 @@ def display_individual_bet_summary(
         user_id = st.session_state.get('username', 'user1')
         user_took_yes = (component_value['choice'] == 'Yes')
         wager_amount = component_value['amount']
+        mode = component_value.get('mode', 'Buy')
 
-        success = add_active_bet(
+        success, message = process_bet_transaction(
             user_id=user_id,
             bet_id=bet_id,
             user_took_yes=user_took_yes,
-            wager_amount=wager_amount
+            wager_amount=wager_amount,
+            mode=mode,
+            bet_name=bet_name
         )
 
         if success:
-            st.toast("Transaction successfull!", icon="✅")
+            st.toast(message, icon="✅")
         else:
-            st.error("Transaction failed. Please try again.")
+            st.toast(message, icon="❌")
 
 def filter_bets_by_category(bets_list, selected_category):
     """Return bets matching selected category, or all bets if "All" or None."""
