@@ -8,9 +8,18 @@
 #############################################################################
 
 import streamlit as st
-from internals import create_component
+import streamlit.components.v1 as components
 import importlib.util
+from data_fetcher import process_bet_transaction
 import os
+
+_COMPONENT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "custom_components", "individual_bet_summary_component"))
+
+# Declare the new bidirectional component
+_bet_summary_component = components.declare_component(
+    "individual_bet_summary_component",
+    path=_COMPONENT_ROOT
+)
 
 # This one has been written for you as an example. You may change it as wanted.
 def display_my_custom_component(value):
@@ -28,6 +37,9 @@ def display_my_custom_component(value):
     # Register and display the component by providing the data and name
     # of the HTML file. HTML must be placed inside the "custom_components" folder.
     html_file_name = "my_custom_component"
+    
+    # This import is now local to the function that uses it
+    from internals import create_component
     create_component(data, html_file_name)
 
 
@@ -73,6 +85,7 @@ def display_trade_summary(trades_list):
 
 
 def display_individual_bet_summary(
+    bet_id: str,
     bet_name: str,
     bet_image_link: str | None,
     yes_value: float,
@@ -81,38 +94,54 @@ def display_individual_bet_summary(
     no_percent: float,
     rules: str,
 ):
-    """Displays an individual bet summary card containing a bet title, image (or "No Image Available" fallback), Buy/Sell mode toggle buttons, Yes/No choice toggle buttons, a rules description, and a transaction button. 
-    The card defaults to Buy Mode and Yes Mode on load; clicking Buy or Sell updates the active mode border highlight and changes the transaction button's color and label accordingly, while clicking Yes or No similarly toggles the choice highlight. 
-    An amount input field validates that the entered dollar value is greater than $0.00, and clicking the transaction button displays a "Transaction Successful" toast popup reflecting the current mode, choice, and amount.
+    """Displays an individual bet summary card and handles bet submission.
+
+    This component renders the bet details and provides UI for placing a bet.
+    On submission, it calls the database to record the new active bet and
+    displays a success or failure notification.
 
     Parameters:
-        bet_name       : Display name of the bet
-        bet_image_link : URL to the bet image (or None / empty string)
-        yes_value      : Dollar value for a Yes share
-        no_value       : Dollar value for a No share
-        yes_percent    : Implied probability % for Yes
-        no_percent     : Implied probability % for No
-        rules          : Description / rules text for the bet
+        bet_id (str): ID of the bet.
+        bet_name (str): Display name of the bet.
+        bet_image_link (str | None): URL to the bet image.
+        yes_value (float): Dollar value for a Yes share.
+        no_value (float): Dollar value for a No share.
+        yes_percent (float): Implied probability % for Yes.
+        no_percent (float): Implied probability % for No.
+        rules (str): Description / rules text for the bet.
     """
-    # Build the image HTML — either an <img> tag or a "No Image Available" fallback
-    if bet_image_link:
-        image_html = f'<img src="{bet_image_link}" alt="Bet image" />'
-    else:
-        image_html = "No Image Available"
+    component_value = _bet_summary_component(
+        bet_id=bet_id,
+        bet_name=bet_name,
+        bet_image_link=bet_image_link,
+        yes_value=f"{yes_value:.2f}",
+        no_value=f"{no_value:.2f}",
+        yes_percent=f"{yes_percent:.0f}",
+        no_percent=f"{no_percent:.0f}",
+        rules=rules,
+        key=f"bet_summary_{bet_id}"
+    )
 
-    data = {
-        'BET_NAME':    bet_name,
-        'IMAGE_HTML':  image_html,
-        'YES_VALUE':   f"{yes_value:.2f}",
-        'NO_VALUE':    f"{no_value:.2f}",
-        'YES_PERCENT': f"{yes_percent:.0f}",
-        'NO_PERCENT':  f"{no_percent:.0f}",
-        'RULES':       rules,
-    }
+    # This block now receives real data from the component's frontend
+    if isinstance(component_value, dict) and component_value.get('action') == 'submit_transaction':
+        user_id = st.session_state.get('username', 'user1')
+        user_took_yes = (component_value['choice'] == 'Yes')
+        wager_amount = component_value['amount']
+        mode = component_value.get('mode', 'Buy')
 
-    html_file_name = "individual_bet_summary"
-    create_component(data, html_file_name, height=700)
+        success, message = process_bet_transaction(
+            user_id=user_id,
+            bet_id=bet_id,
+            user_took_yes=user_took_yes,
+            wager_amount=wager_amount,
+            mode=mode,
+            bet_name=bet_name
+        )
 
+        if success:
+            st.toast(message, icon="✅")
+        else:
+            st.toast(message, icon="❌")
 
 def filter_bets_by_category(bets_list, selected_category):
     """Return bets matching selected category, or all bets if "All" or None."""

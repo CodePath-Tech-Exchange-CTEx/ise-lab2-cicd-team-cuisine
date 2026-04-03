@@ -10,6 +10,7 @@
 
 import os
 import random
+import decimal
 try:
     from google.cloud import bigquery
 except ImportError:
@@ -159,6 +160,116 @@ def get_user_trades(user_id):
         print(f"Error fetching trades from BigQuery: {e}")
         
     return trades
+
+
+def process_bet_transaction(user_id, bet_id, user_took_yes, wager_amount, mode='Buy', bet_name=''):
+    """Handles Buy/Sell logic for a bet, updating or inserting into ActivePurchasedBets."""
+    if user_id not in users:
+        return False, f"User '{user_id}' not found. Please log in with a valid account."
+
+    if bigquery is None:
+        print("google-cloud-bigquery is not installed.")
+        return False, "Database not available."
+
+    client = bigquery.Client()
+    project_id = os.environ.get('GCP_PROJECT')
+    if not project_id:
+        print("Warning: GCP_PROJECT environment variable not set. Using default project for BigQuery.")
+        table_id = '`ISE.ActivePurchasedBets`'
+    else:
+        table_id = f'`{project_id}.ISE.ActivePurchasedBets`'
+
+    wager_decimal = decimal.Decimal(str(wager_amount))
+    bet_display = f" '{bet_name}'" if bet_name else " this bet"
+    position_str = "Yes" if user_took_yes else "No"
+
+    check_query = f"""
+        SELECT WagerAmount 
+        FROM {table_id}
+        WHERE UserID = @user_id AND BetID = @bet_id AND UserTookYes = @user_took_yes
+    """
+    check_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+            bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id),
+            bigquery.ScalarQueryParameter("user_took_yes", "BOOL", user_took_yes),
+        ]
+    )
+
+    try:
+        check_job = client.query(check_query, job_config=check_config)
+        results = list(check_job.result())
+        
+        existing_amount = decimal.Decimal(str(results[0].WagerAmount)) if results else decimal.Decimal('0.0')
+
+        if mode == 'Sell':
+            if not results:
+                return False, f"You do not own the '{position_str}' position on{bet_display} to sell."
+            if existing_amount < wager_decimal:
+                return False, f"You cannot sell more than you own (${existing_amount:.2f}) of the '{position_str}' position on{bet_display}."
+            
+            new_amount = existing_amount - wager_decimal
+            if new_amount == 0:
+                sql = f"DELETE FROM {table_id} WHERE UserID = @user_id AND BetID = @bet_id AND UserTookYes = @user_took_yes"
+                params = [
+                    bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+                    bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id),
+                    bigquery.ScalarQueryParameter("user_took_yes", "BOOL", user_took_yes),
+                ]
+            else:
+                sql = f"UPDATE {table_id} SET WagerAmount = @new_amount WHERE UserID = @user_id AND BetID = @bet_id AND UserTookYes = @user_took_yes"
+                params = [
+                    bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+                    bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id),
+                    bigquery.ScalarQueryParameter("user_took_yes", "BOOL", user_took_yes),
+                    bigquery.ScalarQueryParameter("new_amount", "NUMERIC", new_amount),
+                ]
+            
+            client.query(sql, job_config=bigquery.QueryJobConfig(query_parameters=params)).result()
+            return True, f"Successfully sold ${wager_decimal:.2f} of the '{position_str}' position on{bet_display}."
+
+        else:  # mode == 'Buy'
+            # Check if user owns the opposite position for this bet
+            opposite_check_query = f"""
+                SELECT 1
+                FROM {table_id}
+                WHERE UserID = @user_id AND BetID = @bet_id AND UserTookYes = @opposite_user_took_yes
+            """
+            opposite_check_config = bigquery.QueryJobConfig(
+                query_parameters=[
+                    bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+                    bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id),
+                    bigquery.ScalarQueryParameter("opposite_user_took_yes", "BOOL", not user_took_yes),
+                ]
+            )
+            if list(client.query(opposite_check_query, job_config=opposite_check_config).result()):
+                return False, f"You cannot buy this position on{bet_display} as you already own the opposite position."
+
+            if results:
+                new_amount = existing_amount + wager_decimal
+                sql = f"UPDATE {table_id} SET WagerAmount = @new_amount WHERE UserID = @user_id AND BetID = @bet_id AND UserTookYes = @user_took_yes"
+                params = [
+                    bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+                    bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id),
+                    bigquery.ScalarQueryParameter("user_took_yes", "BOOL", user_took_yes),
+                    bigquery.ScalarQueryParameter("new_amount", "NUMERIC", new_amount),
+                ]
+                client.query(sql, job_config=bigquery.QueryJobConfig(query_parameters=params)).result()
+                return True, f"Successfully added ${wager_decimal:.2f} to your existing '{position_str}' wager on{bet_display}."
+            else:
+                sql = f"INSERT INTO {table_id} (UserID, BetID, UserTookYes, WagerAmount) VALUES (@user_id, @bet_id, @user_took_yes, @wager_amount)"
+                params = [
+                    bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+                    bigquery.ScalarQueryParameter("bet_id", "STRING", bet_id),
+                    bigquery.ScalarQueryParameter("user_took_yes", "BOOL", user_took_yes),
+                    bigquery.ScalarQueryParameter("wager_amount", "NUMERIC", wager_decimal),
+                ]
+                client.query(sql, job_config=bigquery.QueryJobConfig(query_parameters=params)).result()
+                return True, f"Successfully purchased the '{position_str}' position on{bet_display} for ${wager_decimal:.2f}."
+
+    except Exception as e:
+        print(f"Error processing transaction in BigQuery: {e}")
+        return False, "Database error occurred during transaction."
 
 
 def get_user_profile(user_id):

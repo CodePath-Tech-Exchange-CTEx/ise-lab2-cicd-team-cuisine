@@ -16,13 +16,14 @@ query_params = st.query_params
 bet_id = query_params.get("bet_id")
 
 if not bet_id:
-    st.error("No bet ID provided in the URL (e.g., ?bet_id=bet1)")
-    st.stop()
+    # Fallback to a default bet if accessed directly via sidebar
+    bet_id = "bet001"
 
 bet = get_bet_data(bet_id)
 if not bet:
     st.error(f"Could not find data for bet with ID '{bet_id}'.")
 else:
     display_individual_bet_summary(
+        bet_id=bet_id,
         **bet
     )
