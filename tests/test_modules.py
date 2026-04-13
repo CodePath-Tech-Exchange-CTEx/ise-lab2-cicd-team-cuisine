@@ -3,7 +3,7 @@
 #############################################################################
 from __future__ import annotations
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from modules import (
     display_post,
@@ -13,6 +13,7 @@ from modules import (
     compute_trade_metrics,
     display_trade_summary,
     filter_bets_by_category,
+    display_friends_activity_card,
 )
 
 

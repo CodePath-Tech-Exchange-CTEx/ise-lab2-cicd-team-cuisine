@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 import datetime
 import decimal
 
-from data_fetcher import get_user_trades, get_bet_data, process_bet_transaction
+from data_fetcher import get_user_trades, get_bet_data, process_bet_transaction, get_friends_activity
  
 
 # A mock row object to simulate BigQuery results
@@ -183,6 +183,52 @@ class TestDataFetcher(unittest.TestCase):
         self.assertFalse(success)
         self.assertIn("Database error", msg)
 
+class TestGetFriendsActivity(unittest.TestCase):
+    """Tests for the get_friends_activity function."""
+
+    @patch('data_fetcher.bigquery', None)
+    def test_get_friends_activity_fallback(self):
+        """Should return hardcoded fallback data when bigquery is not available."""
+        activity = get_friends_activity('user1')
+        self.assertIsInstance(activity, list)
+        self.assertEqual(len(activity), 2)
+        self.assertEqual(activity[0]['bet_id'], 'btc-100k')
+
+    @patch('data_fetcher.bigquery')
+    def test_get_friends_activity_success(self, mock_bigquery):
+        """Should correctly map BigQuery results to the activity dictionary."""
+        mock_client = MagicMock()
+        mock_query_job = MagicMock()
+        
+        mock_row = MockRow(
+            BetID='bet123',
+            BetName='Test Friends Bet',
+            YesValue=0.75,
+            NoValue=0.25,
+            YesPercent=75.0,
+            NoPercent=25.0,
+            friends=['Alice', 'Bob']
+        )
+        
+        mock_query_job.result.return_value = [mock_row]
+        mock_client.query.return_value = mock_query_job
+        mock_bigquery.Client.return_value = mock_client
+
+        activity = get_friends_activity('user1')
+        self.assertEqual(len(activity), 1)
+        self.assertEqual(activity[0]['bet_id'], 'bet123')
+        self.assertEqual(activity[0]['friends'], ['Alice', 'Bob'])
+        self.assertEqual(activity[0]['yes_value'], 0.75)
+
+    @patch('data_fetcher.bigquery')
+    def test_get_friends_activity_query_fails(self, mock_bigquery):
+        """Should return an empty list if the database query fails."""
+        mock_client = MagicMock()
+        mock_client.query.side_effect = Exception("BQ Error")
+        mock_bigquery.Client.return_value = mock_client
+
+        activity = get_friends_activity('user1')
+        self.assertEqual(activity, [])
 
 if __name__ == "__main__":
     unittest.main()
