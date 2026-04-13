@@ -84,8 +84,8 @@ if st.session_state.get("show_individual"):
         st.session_state.show_individual = False
         st.rerun()
     st.markdown("---")
-    # Hardcoded ID to demonstrate fetching from the database.
-    bet_id = 'bet001'
+    # Fetch selected bet from session state or fallback to default
+    bet_id = st.session_state.get("selected_bet_id", "bet001")
     bet = get_bet_data(bet_id)
     if bet:
         display_individual_bet_summary(
@@ -140,10 +140,12 @@ else:
 if __name__ == '__main__':
     if login():
         page = st.sidebar.radio(
-            'Navigation', ['Home', 'Profile / Trade Summary']
+            'Navigation', ['Home', 'Friends Activity', 'Profile / Trade Summary']
         )
         if page == 'Home':
             pass
+        elif page == 'Friends Activity':
+            st.switch_page("pages/2_Friends_Activity.py")
         elif page == 'Profile / Trade Summary':
             st.title('Profile & Trade Summary')
             uid = st.session_state.get('username', userId)

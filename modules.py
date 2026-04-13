@@ -180,3 +180,39 @@ def display_genai_advice(timestamp, content, image):
             st.error("Could not find a main() function in 3_AI_Advice.py")
     else:
         st.error(f"File not found: {page_path}")
+
+def display_friends_activity_card(bet):
+    """Renders a card for friends' activity as seen in mockups."""
+    with st.container(border=True):
+        st.caption(bet.get('category', 'Category').upper())
+        st.markdown(f"### {bet['bet_name']}")
+        
+        # Percentages and Prices
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown(f"<span style='color:#00ff88; font-weight:bold;'>Yes {bet['yes_percent']:.0f}%</span>", unsafe_allow_html=True)
+            st.caption(f"${bet['yes_value']:.2f}")
+        with c2:
+            st.markdown(f"<span style='color:#ff4b4b; font-weight:bold;'>No {bet['no_percent']:.0f}%</span>", unsafe_allow_html=True)
+            st.caption(f"${bet['no_value']:.2f}")
+            
+        st.divider()
+        
+        # Friends text
+        friends = bet['friends']
+        if not friends:
+            friends_text = "No friends betting yet"
+        elif len(friends) > 2:
+            friends_text = f"{', '.join(friends[:-1])}, and {friends[-1]} are betting"
+        elif len(friends) == 2:
+            friends_text = f"{friends[0]} and {friends[1]} are betting"
+        else:
+            friends_text = f"{friends[0]} is betting"
+            
+        st.caption(friends_text)
+        
+        # Navigation to individual bet view in app.py
+        if st.button("View Details", key=f"view_{bet['bet_id']}", use_container_width=True):
+            st.session_state.selected_bet_id = bet['bet_id']
+            st.session_state.show_individual = True
+            st.switch_page("app.py")
