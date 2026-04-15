@@ -369,3 +369,78 @@ def get_bet_data(bet_id):
         print(f"Error fetching bet from BigQuery: {e}")
         
     return None
+
+def get_friends_activity(user_id):
+    """Returns bets that the user's friends are currently betting on from BigQuery."""
+    if bigquery is None:
+        # Fallback for local development when BigQuery is not available
+        return [
+            {
+                "bet_id": "btc-100k",
+                "bet_name": "Will Bitcoin hit $100k?",
+                "yes_value": 0.72,
+                "no_value": 0.28,
+                "yes_percent": 72.0,
+                "no_percent": 28.0,
+                "category": "Crypto",
+                "friends": ["Shavaughn", "Sangam", "Brian", "Kameron"]
+            },
+            {
+                "bet_id": "eth-5k",
+                "bet_name": "Will Ethereum reach $5,000 in 2025?",
+                "yes_value": 0.45,
+                "no_value": 0.55,
+                "yes_percent": 45.0,
+                "no_percent": 55.0,
+                "category": "Crypto",
+                "friends": ["Remi", "Blake"]
+            }
+        ]
+
+    client = bigquery.Client()
+    project_id = os.environ.get('GCP_PROJECT')
+    prefix = f"`{project_id}.ISE" if project_id else "`ISE"
+    
+    # This query finds friends via the Friendships table and joins their active bets
+    query = f"""
+        WITH user_friends AS (
+            SELECT UserID2 as friend_id FROM {prefix}.Friendships` WHERE UserID1 = @user_id
+            UNION DISTINCT
+            SELECT UserID1 as friend_id FROM {prefix}.Friendships` WHERE UserID2 = @user_id
+        ),
+        activity AS (
+            SELECT 
+                b.BetID, b.BetName, b.YesValue, b.NoValue, b.YesPercent, b.NoPercent,
+                u.Name as friend_name
+            FROM {prefix}.ActivePurchasedBets` apb
+            JOIN user_friends f ON apb.UserID = f.friend_id
+            JOIN {prefix}.Users` u ON apb.UserID = u.UserID
+            JOIN {prefix}.Bets` b ON apb.BetID = b.BetID
+        )
+        SELECT 
+            BetID, BetName, YesValue, NoValue, YesPercent, NoPercent,
+            ARRAY_AGG(DISTINCT friend_name) as friends
+        FROM activity
+        GROUP BY 1, 2, 3, 4, 5, 6
+    """
+    
+    try:
+        query_job = client.query(query, job_config=bigquery.QueryJobConfig(
+            query_parameters=[bigquery.ScalarQueryParameter("user_id", "STRING", user_id)]
+        ))
+        results = []
+        for row in query_job.result():
+            results.append({
+                'bet_id': row.BetID,
+                'bet_name': row.BetName,
+                'yes_value': float(row.YesValue) if row.YesValue is not None else 0.0,
+                'no_value': float(row.NoValue) if row.NoValue is not None else 0.0,
+                'yes_percent': row.YesPercent,
+                'no_percent': row.NoPercent,
+                'category': 'Trending', # Fallback category
+                'friends': list(row.friends),
+            })
+        return results
+    except Exception as e:
+        print(f"Error fetching friends activity from BigQuery: {e}")
+        return []
