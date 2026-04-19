@@ -6,8 +6,16 @@ from unittest.mock import patch, MagicMock
 import datetime
 import decimal
 
-from data_fetcher import get_user_trades, get_bet_data, process_bet_transaction, get_friends_activity
- 
+from data_fetcher import (
+    get_user_trades,
+    get_bet_data,
+    process_bet_transaction,
+    get_friends_activity,
+    get_user_profile,
+    get_user_posts,
+    get_genai_advice,
+)
+
 
 # A mock row object to simulate BigQuery results
 class MockRow:
@@ -229,6 +237,32 @@ class TestGetFriendsActivity(unittest.TestCase):
 
         activity = get_friends_activity('user1')
         self.assertEqual(activity, [])
+
+class TestDataFetcherSimpleHelpers(unittest.TestCase):
+    """Tests for simple helper methods in data_fetcher.py."""
+
+    def test_get_user_profile_existing_user(self):
+        profile = get_user_profile('user1')
+        self.assertIsInstance(profile, dict)
+        self.assertEqual(profile['username'], 'remi_the_rems')
+        self.assertIn('friends', profile)
+
+    def test_get_user_profile_missing_user(self):
+        with self.assertRaises(ValueError):
+            get_user_profile('unknown_user')
+
+    def test_get_user_posts_returns_list(self):
+        posts = get_user_posts('user1')
+        self.assertIsInstance(posts, list)
+        self.assertGreater(len(posts), 0)
+        self.assertEqual(posts[0]['user_id'], 'user1')
+        self.assertIn('content', posts[0])
+
+    def test_get_genai_advice_returns_dict(self):
+        advice = get_genai_advice('user1')
+        self.assertIsInstance(advice, dict)
+        self.assertIn('advice_id', advice)
+        self.assertIn('content', advice)
 
 if __name__ == "__main__":
     unittest.main()

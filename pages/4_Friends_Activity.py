@@ -9,8 +9,10 @@ st.title("Friends")
 st.write("See what your crew is betting on")
 st.markdown("---")
 
-userId = st.session_state.get('username', 'user1')
-activity = get_friends_activity(userId)
+user_id = st.session_state.get('username', 'user1')
+activity = get_friends_activity(user_id)
+
+st.markdown(f"### Friends activity for {user_id}")
 
 if not activity:
     st.info("None of your friends are currently betting.")

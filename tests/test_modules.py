@@ -14,6 +14,7 @@ from modules import (
     display_trade_summary,
     filter_bets_by_category,
     display_friends_activity_card,
+    format_friends_activity_text,
 )
 
 
@@ -181,6 +182,66 @@ class TestDisplayRecentWorkouts(unittest.TestCase):
     def test_display_recent_workouts_empty(self, mock_write):
         display_recent_workouts([])
         mock_write.assert_not_called()
+
+
+class TestFormatFriendsActivityText(unittest.TestCase):
+    """Tests the friend summary helper."""
+
+    def test_no_friends(self):
+        self.assertEqual(format_friends_activity_text([]), "No friends betting yet")
+
+    def test_one_friend(self):
+        self.assertEqual(format_friends_activity_text(["Alice"]), "Alice is betting")
+
+    def test_two_friends(self):
+        self.assertEqual(format_friends_activity_text(["Alice", "Bob"]), "Alice and Bob are betting")
+
+    def test_many_friends(self):
+        self.assertEqual(
+            format_friends_activity_text(["Alice", "Bob", "Charlie", "Dana"]),
+            "Alice, Bob, and 2 others are betting"
+        )
+
+
+class TestDisplayFriendsActivityCard(unittest.TestCase):
+    """Tests the display_friends_activity_card helper."""
+
+    @patch("modules.st.button", return_value=False)
+    @patch("modules.st.columns")
+    @patch("modules.st.container")
+    @patch("modules.st.caption")
+    @patch("modules.st.markdown")
+    @patch("modules.st.divider")
+    def test_display_friends_activity_card_renders(self, mock_divider, mock_markdown, mock_caption, mock_container, mock_columns, mock_button):
+        container_cm = MagicMock()
+        container_cm.__enter__.return_value = container_cm
+        container_cm.__exit__.return_value = False
+        mock_container.return_value = container_cm
+
+        col1 = MagicMock()
+        col1.__enter__.return_value = col1
+        col1.__exit__.return_value = False
+        col2 = MagicMock()
+        col2.__enter__.return_value = col2
+        col2.__exit__.return_value = False
+        mock_columns.return_value = [col1, col2]
+
+        bet = {
+            "bet_id": "btc-100k",
+            "bet_name": "Will Bitcoin hit $100k?",
+            "category": "Crypto",
+            "yes_percent": 72.0,
+            "no_percent": 28.0,
+            "yes_value": 0.72,
+            "no_value": 0.28,
+            "friends": ["Alice", "Bob", "Charlie", "Dana"],
+        }
+
+        display_friends_activity_card(bet)
+
+        mock_markdown.assert_any_call("### Will Bitcoin hit $100k?")
+        mock_caption.assert_any_call("4 friends betting")
+        mock_caption.assert_any_call("Alice, Bob, and 2 others are betting")
 
 
 class TestFilterBetsByCategory(unittest.TestCase):

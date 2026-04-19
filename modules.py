@@ -181,6 +181,20 @@ def display_genai_advice(timestamp, content, image):
     else:
         st.error(f"File not found: {page_path}")
 
+
+def format_friends_activity_text(friends):
+    """Return a readable summary sentence for friends betting."""
+    if not friends:
+        return "No friends betting yet"
+    if len(friends) == 1:
+        return f"{friends[0]} is betting"
+    if len(friends) == 2:
+        return f"{friends[0]} and {friends[1]} are betting"
+    if len(friends) == 3:
+        return f"{friends[0]}, {friends[1]}, and {friends[2]} are betting"
+    return f"{friends[0]}, {friends[1]}, and {len(friends) - 2} others are betting"
+
+
 def display_friends_activity_card(bet):
     """Renders a card for friends' activity as seen in mockups."""
     with st.container(border=True):
@@ -199,17 +213,15 @@ def display_friends_activity_card(bet):
         st.divider()
         
         # Friends text
-        friends = bet['friends']
-        if not friends:
-            friends_text = "No friends betting yet"
-        elif len(friends) > 2:
-            friends_text = f"{', '.join(friends[:-1])}, and {friends[-1]} are betting"
-        elif len(friends) == 2:
-            friends_text = f"{friends[0]} and {friends[1]} are betting"
-        else:
-            friends_text = f"{friends[0]} is betting"
-            
-        st.caption(friends_text)
+        friends = bet.get('friends', []) or []
+        friend_count = len(friends)
+        friend_count_text = (
+            f"{friend_count} friend{'s' if friend_count != 1 else ''} betting"
+            if friend_count > 0
+            else "No friends betting yet"
+        )
+        st.caption(friend_count_text)
+        st.caption(format_friends_activity_text(friends))
         
         # Navigation to individual bet view in app.py
         if st.button("View Details", key=f"view_{bet['bet_id']}", use_container_width=True):
