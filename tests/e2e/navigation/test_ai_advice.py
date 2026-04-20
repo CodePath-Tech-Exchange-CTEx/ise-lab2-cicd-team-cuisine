@@ -10,12 +10,11 @@ def test_ai_advice_navigation():
 
         login(page)
 
-        page.get_by_text("AI Advice").click()
-        page.wait_for_url("**/AI_Advice", timeout=15000)
+        page.get_by_role("radio", name="AI Advice").click()
 
-        assert page.title() == "AI Advisor — AirBets"
+        assert page.get_by_text("AI Advisor").wait_for(timeout=15000)
         assert page.get_by_text("AI Analysis").is_visible()
-        assert page.get_by_text("TREND INSIGHT").is_visible()
-        assert page.get_by_text("RISK FLAG").is_visible()
+        assert page.get_by_text("Trend Insight").is_visible()
+        assert page.get_by_text("Risk Flag").is_visible()
 
         browser.close()

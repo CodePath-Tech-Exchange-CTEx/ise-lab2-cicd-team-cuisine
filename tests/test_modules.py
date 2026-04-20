@@ -5,6 +5,8 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch, MagicMock
 
+import streamlit as st
+
 from modules import (
     display_post,
     display_individual_bet_summary,
@@ -20,6 +22,8 @@ from modules import (
 
 def call_display(**kwargs):
     """Call display_individual_bet_summary with safe defaults, overridden by kwargs."""
+    st.session_state.logged_in = True
+    st.session_state.username = 'test_user'
     defaults = dict(
         bet_id="test_bet",
         bet_name="Test Bet",

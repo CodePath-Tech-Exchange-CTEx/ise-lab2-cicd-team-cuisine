@@ -9,11 +9,9 @@ def test_friends_activity_navigation():
         page = browser.new_page()
 
         login(page)
-        page.get_by_text("Friends Activity").click()
-        page.wait_for_url("**/Friends_Activity", timeout=10000)
+        page.get_by_role("radio", name="Friends Activity").click()
 
-        assert page.title() == "Friends Activity - AirBets"
-        assert page.get_by_text("Friends activity for").is_visible()
+        assert page.get_by_text("Friends activity for").wait_for(timeout=15000)
         assert page.get_by_text("Sort by most friends betting").is_visible()
         assert page.get_by_text("View Details").count() >= 1
 

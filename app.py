@@ -100,108 +100,148 @@ st.set_page_config(layout="wide", page_title="AirBets")
 LOGO_PATH = "static/images/airbets-logo.svg"
 COLS_PER_ROW = 4
 
-# Navbar: one row, logo + name left (same div), Profile/Settings right
+# Navbar: one row, logo + name left, Profile right
 def _logo_data_uri():
     try:
         with open(LOGO_PATH, "rb") as f:
             return "data:image/svg+xml;base64," + base64.b64encode(f.read()).decode()
     except Exception:
         return ""
-    # An example of displaying a custom component called "my_custom_component"
-    # value = st.text_input('Enter your name')
-    # display_my_custom_component(value)
 
-_logo = _logo_data_uri()
-st.markdown(
-    '<nav style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:1rem;">'
-    '<div style="display:flex; align-items:center; gap:12px;">'
-    f'<img src="{_logo}" alt="" style="height:56px; width:56px; object-fit:contain;" onerror="this.style.display=\'none\'"/>'
-    '<span style="font-size:2rem; font-weight:700;">AirBets</span>'
-    '</div>'
-    '<div style="color:inherit; opacity:0.9; font-size:1.1rem;">Settings &nbsp; Profile</div>'
-    '</nav>',
-    unsafe_allow_html=True,
-)
 
-st.markdown("---")
+def render_post_creator(user_id):
+    if 'user_posts' not in st.session_state:
+        st.session_state.user_posts = get_user_posts(user_id)
 
-# Switch view: "Individual bet view" shows full card (buy/sell, submit) on this same page
-if st.button("**Individual bet view** (full card with buy/sell, submit)", key="go_individual"):
-    st.session_state.show_individual = True
-    st.rerun()
+    with st.expander("Create a post", expanded=True):
+        content = st.text_area("What's on your mind?", key="new_post_content", height=100)
+        if st.button("Post", key="submit_new_post"):
+            if not content or not content.strip():
+                st.error("Post content cannot be empty.")
+            else:
+                st.session_state.user_posts.insert(0, {
+                    'user_id': user_id,
+                    'post_id': f'post{len(st.session_state.user_posts) + 1}',
+                    'timestamp': '2024-01-01 00:00:00',
+                    'content': content.strip(),
+                    'image': None,
+                })
+                st.success("Post created successfully.")
+                st.session_state.new_post_content = ""
 
-if st.session_state.get("show_individual"):
-    if st.button("← Back to all bets", key="back_all"):
-        st.session_state.show_individual = False
-        st.rerun()
-    st.markdown("---")
-    # Fetch selected bet from session state or fallback to the first available bet
-    bet_id = st.session_state.get("selected_bet_id")
-    if not bet_id:
-        available_bets = get_available_bets()
-        bet_id = available_bets[0]["bet_id"] if available_bets else None
-    bet = get_bet_data(bet_id) if bet_id else None
-    if bet:
-        display_individual_bet_summary(
-            bet_id=bet_id,
-            **bet
-        )
+    st.markdown("### Recent posts")
+    if st.session_state.user_posts:
+        for post in st.session_state.user_posts:
+            display_post(
+                post['user_id'],
+                get_user_profile(user_id).get('profile_image', ''),
+                post['timestamp'],
+                post['content'],
+                post.get('image'),
+            )
     else:
-        st.error("Could not find a valid bet to show in the individual bet view.")
-    st.stop()
+        st.info("No posts yet.")
 
-st.markdown(
-    """
-    <style>
-    [data-testid="column"] { padding-left: 0 !important; padding-right: 0 !important; }
-    [data-testid="column"] > div { padding-left: 0 !important; padding-right: 0 !important; }
-    [data-testid="stVerticalBlockBorderWrapper"] { margin: 0 0 0.25rem 0 !important; padding: 0.5rem; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
-# ---- Category filter ----
-category_options = ["All"] + get_bet_categories()
-selected_category = st.selectbox(
-    "Category",
-    options=category_options,
-    index=0,
-    key="category_filter",
-    disabled=False,
-)
+def render_home():
+    if st.session_state.get("show_individual"):
+        if st.button("← Back to all bets", key="back_all"):
+            st.session_state.show_individual = False
+            st.rerun()
+        st.markdown("---")
+        bet_id = st.session_state.get("selected_bet_id")
+        if not bet_id:
+            available_bets = get_available_bets()
+            bet_id = available_bets[0]["bet_id"] if available_bets else None
+        bet = get_bet_data(bet_id) if bet_id else None
+        if bet:
+            display_individual_bet_summary(
+                bet_id=bet_id,
+                **bet
+            )
+        else:
+            st.error("Could not find a valid bet to show in the individual bet view.")
+        return
 
-bets = get_available_bets()
-bets = filter_bets_by_category(bets, selected_category)
+    _logo = _logo_data_uri()
+    st.markdown(
+        '<nav style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:1rem;">'
+        '<div style="display:flex; align-items:center; gap:12px;">'
+        f'<img src="{_logo}" alt="" style="height:56px; width:56px; object-fit:contain;" onerror="this.style.display=\'none\'"/>'
+        '<span style="font-size:2rem; font-weight:700;">AirBets</span>'
+        '</div>'
+        '<div style="color:inherit; opacity:0.9; font-size:1.1rem;">Profile</div>'
+        '</nav>',
+        unsafe_allow_html=True,
+    )
 
-# ---- 4 columns, each filled top-to-bottom with cards ----
-if not bets:
-    st.info("No bets yet.")
-else:
-    cols = st.columns(COLS_PER_ROW)
-    for c in range(COLS_PER_ROW):
-        col_bets = [bets[i] for i in range(c, len(bets), COLS_PER_ROW)]
-        with cols[c]:
-            for bet in col_bets:
-                with st.container(border=True):
-                    st.markdown(f"**{bet['category']}**")
-                    st.markdown(f"### {bet['bet_name']}")
-                    st.caption(f"Yes **{bet['yes_percent']}%** · No **{bet['no_percent']}%**")
-                    st.caption(f"${bet['yes_value']:.2f} / ${bet['no_value']:.2f}")
-# This is the starting point for your app.  The flow checks login state
-# first and then renders either the home feed or the profile/trade page.
-if __name__ == '__main__':
+    st.markdown("---")
+    user_id = st.session_state.get('username', userId)
+    render_post_creator(user_id)
+
+    st.markdown("---")
+    st.subheader("Available bets")
+    st.markdown(
+        """
+        <style>
+        [data-testid="column"] { padding-left: 0 !important; padding-right: 0 !important; }
+        [data-testid="column"] > div { padding-left: 0 !important; padding-right: 0 !important; }
+        [data-testid="stVerticalBlockBorderWrapper"] { margin: 0 0 0.25rem 0 !important; padding: 0.5rem; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    category_options = ["All"] + get_bet_categories()
+    selected_category = st.selectbox(
+        "Category",
+        options=category_options,
+        index=0,
+        key="category_filter",
+    )
+
+    bets = get_available_bets()
+    bets = filter_bets_by_category(bets, selected_category)
+
+    if not bets:
+        st.info("No bets yet.")
+    else:
+        cols = st.columns(COLS_PER_ROW)
+        for c in range(COLS_PER_ROW):
+            col_bets = [bets[i] for i in range(c, len(bets), COLS_PER_ROW)]
+            with cols[c]:
+                for bet in col_bets:
+                    with st.container(border=True):
+                        st.markdown(f"**{bet['category']}**")
+                        st.markdown(f"### {bet['bet_name']}")
+                        st.caption(f"Yes **{bet['yes_percent']}%** · No **{bet['no_percent']}%**")
+                        st.caption(f"${bet['yes_value']:.2f} / ${bet['no_value']:.2f}")
+                        if st.button("View details", key=f"view_{bet['bet_id']}", use_container_width=True):
+                            st.session_state.selected_bet_id = bet['bet_id']
+                            st.session_state.show_individual = True
+                            st.rerun()
+
+
+def main():
     if login():
         if st.session_state.get('next_page') == 'profile':
             st.session_state.next_page = None
             st.switch_page("pages/5_Profile.py")
 
         page = st.sidebar.radio(
-            'Navigation', ['Home', 'Friends Activity', 'Profile / Trade Summary']
+            'Navigation', ['Home', 'AI Advice', 'Friends Activity', 'Profile / Trade Summary'],
+            index=0,
+            key='nav_page',
         )
         if page == 'Home':
-            pass
+            render_home()
+        elif page == 'AI Advice':
+            st.switch_page("pages/3_AI_Advice.py")
         elif page == 'Friends Activity':
             st.switch_page("pages/4_Friends_Activity.py")
         elif page == 'Profile / Trade Summary':
             st.switch_page("pages/5_Profile.py")
+
+
+if st.runtime.exists() or __name__ == '__main__':
+    main()

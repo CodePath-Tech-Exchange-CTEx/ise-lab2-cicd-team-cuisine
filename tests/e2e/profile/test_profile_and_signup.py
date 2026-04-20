@@ -9,7 +9,7 @@ def test_profile_page_shows_friends_and_past_bets():
         page = browser.new_page()
 
         login(page)
-        page.get_by_text("Profile / Trade Summary").click()
+        page.get_by_role("radio", name="Profile / Trade Summary").click()
 
         assert page.get_by_text("Profile & Trade Summary").is_visible()
         assert page.get_by_text("Friends list").is_visible()
@@ -25,7 +25,7 @@ def test_signup_flow_creates_new_user():
         page = browser.new_page()
 
         page.goto(BASE_URL)
-        page.get_by_label("Sign up").check()
+        page.locator('label:has-text("Sign up")').click()
         page.get_by_label("Username").fill("e2e_signup_user")
         page.get_by_label("Full name").fill("E2E Signup User")
         page.get_by_label("Date of birth (YYYY-MM-DD)").fill("1995-01-01")

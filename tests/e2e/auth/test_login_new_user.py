@@ -8,7 +8,7 @@ def test_login_new_user_sets_session_state(monkeypatch):
     monkeypatch.setitem(app.st.session_state, 'logged_in', False)
     monkeypatch.setitem(app.st.session_state, 'username', None)
 
-    def fake_text_input(label, type=None):
+    def fake_text_input(label, key=None, type=None):
         return 'new_test_user' if 'Username' in label else 'supersecret'
 
     def fake_button(label, key=None):
@@ -30,7 +30,7 @@ def test_login_fallback_username_if_blank(monkeypatch):
     monkeypatch.setitem(app.st.session_state, 'logged_in', False)
     monkeypatch.setitem(app.st.session_state, 'username', None)
 
-    def fake_text_input(label, type=None):
+    def fake_text_input(label, key=None, type=None):
         return ''
 
     def fake_button(label, key=None):
