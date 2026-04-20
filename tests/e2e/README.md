@@ -7,7 +7,7 @@ This folder contains the initial E2E test scaffold for the Team Cuisine app.
 1. Start the local app:
 
 ```bash
-streamlit run app.py
+streamlit run home.py
 ```
 
 2. In another terminal, install dev dependencies and Playwright browsers if needed:

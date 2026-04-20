@@ -227,8 +227,8 @@ def display_friends_activity_card(bet):
         st.caption(friend_count_text)
         st.caption(format_friends_activity_text(friends))
         
-        # Navigation to individual bet view in app.py
+        # Navigation to individual bet view in home.py
         if st.button("View Details", key=f"view_{bet['bet_id']}", use_container_width=True):
             st.session_state.selected_bet_id = bet['bet_id']
             st.session_state.show_individual = True
-            st.switch_page("app.py")
+            st.switch_page("home.py")

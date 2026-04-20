@@ -9,7 +9,7 @@ def test_profile_page_shows_friends_and_past_bets():
         page = browser.new_page()
 
         login(page)
-        page.get_by_role("radio", name="Profile / Trade Summary").click()
+        page.locator('a:has-text("Profile")').first.click()
 
         assert page.get_by_text("Profile & Trade Summary").is_visible()
         assert page.get_by_text("Friends list").is_visible()

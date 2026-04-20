@@ -1,12 +1,12 @@
 import pytest
 
+import home
+
 
 def test_login_new_user_sets_session_state(monkeypatch):
-    import app
-
     # Ensure clean login state
-    monkeypatch.setitem(app.st.session_state, 'logged_in', False)
-    monkeypatch.setitem(app.st.session_state, 'username', None)
+    monkeypatch.setitem(home.st.session_state, 'logged_in', False)
+    monkeypatch.setitem(home.st.session_state, 'username', None)
 
     def fake_text_input(label, key=None, type=None):
         return 'new_test_user' if 'Username' in label else 'supersecret'
@@ -14,21 +14,19 @@ def test_login_new_user_sets_session_state(monkeypatch):
     def fake_button(label, key=None):
         return True
 
-    monkeypatch.setattr(app.st, 'text_input', fake_text_input)
-    monkeypatch.setattr(app.st, 'button', fake_button)
+    monkeypatch.setattr(home.st, 'text_input', fake_text_input)
+    monkeypatch.setattr(home.st, 'button', fake_button)
 
-    result = app.login()
+    result = home.login()
 
-    assert app.st.session_state.logged_in is True
-    assert app.st.session_state.username == 'new_test_user'
+    assert home.st.session_state.logged_in is True
+    assert home.st.session_state.username == 'new_test_user'
     assert result is False
 
 
 def test_login_fallback_username_if_blank(monkeypatch):
-    import app
-
-    monkeypatch.setitem(app.st.session_state, 'logged_in', False)
-    monkeypatch.setitem(app.st.session_state, 'username', None)
+    monkeypatch.setitem(home.st.session_state, 'logged_in', False)
+    monkeypatch.setitem(home.st.session_state, 'username', None)
 
     def fake_text_input(label, key=None, type=None):
         return ''
@@ -36,11 +34,11 @@ def test_login_fallback_username_if_blank(monkeypatch):
     def fake_button(label, key=None):
         return True
 
-    monkeypatch.setattr(app.st, 'text_input', fake_text_input)
-    monkeypatch.setattr(app.st, 'button', fake_button)
+    monkeypatch.setattr(home.st, 'text_input', fake_text_input)
+    monkeypatch.setattr(home.st, 'button', fake_button)
 
-    result = app.login()
+    result = home.login()
 
-    assert app.st.session_state.logged_in is True
-    assert app.st.session_state.username == app.userId
+    assert home.st.session_state.logged_in is True
+    assert home.st.session_state.username == home.userId
     assert result is False

@@ -2,7 +2,7 @@ import importlib
 import streamlit as st
 from unittest.mock import MagicMock
 
-import app
+import home
 
 
 class SessionState(dict):
@@ -26,10 +26,10 @@ def test_login_blanks_use_default_user(monkeypatch):
     monkeypatch.setattr(st, 'radio', lambda *args, **kwargs: 'Log in')
     monkeypatch.setattr(st, 'text_input', _fake_text_input)
     monkeypatch.setattr(st, 'button', lambda *args, **kwargs: True)
-    monkeypatch.setattr(app, 'get_user_id_by_username', lambda username: None)
-    monkeypatch.setattr(app, 'create_user', lambda username, full_name, date_of_birth: 'user1')
+    monkeypatch.setattr(home, 'get_user_id_by_username', lambda username: None)
+    monkeypatch.setattr(home, 'create_user', lambda username, full_name, date_of_birth: 'user1')
 
-    result = app.login()
+    result = home.login()
 
     assert result is False
     assert st.session_state['logged_in'] is True
@@ -51,10 +51,10 @@ def test_signup_creates_new_user_and_redirects(monkeypatch):
 
     monkeypatch.setattr(st, 'text_input', fake_text_input)
     monkeypatch.setattr(st, 'button', lambda *args, **kwargs: True)
-    monkeypatch.setattr(app, 'get_user_id_by_username', lambda username: None)
-    monkeypatch.setattr(app, 'create_user', lambda username, full_name, date_of_birth: 'newuser_id')
+    monkeypatch.setattr(home, 'get_user_id_by_username', lambda username: None)
+    monkeypatch.setattr(home, 'create_user', lambda username, full_name, date_of_birth: 'newuser_id')
 
-    result = app.login()
+    result = home.login()
 
     assert result is False
     assert st.session_state['logged_in'] is True

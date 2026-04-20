@@ -17,7 +17,7 @@ def _read_project_file(relative_path):
 def test_dockerfile_includes_streamlit_entrypoint():
     text = _read_project_file(["Dockerfile"])
     assert "EXPOSE 8080" in text
-    assert 'ENTRYPOINT ["streamlit", "run", "app.py"]' in text
+    assert 'ENTRYPOINT ["streamlit", "run", "home.py"]' in text
 
 
 def test_run_streamlit_script_references_docker_run():

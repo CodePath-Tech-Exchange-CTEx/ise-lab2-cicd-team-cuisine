@@ -403,7 +403,7 @@ def get_user_posts(user_id):
         'post_id': 'post1',
         'timestamp': '2024-01-01 00:00:00',
         'content': content,
-        'image': 'image_url',
+        'image': None,
     }]
 
 

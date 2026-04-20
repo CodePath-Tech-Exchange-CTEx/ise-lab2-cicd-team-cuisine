@@ -6,29 +6,10 @@ import streamlit as st
 from data import get_available_bets, get_bet_categories
 from modules import display_individual_bet_summary
 
-LOGO_PATH = "static/images/airbets-logo.svg"
 COLS_PER_ROW = 3
 
-# ---- Navbar: logo + AirBets left, Profile + Settings right ----
-nav_left, nav_right = st.columns([3, 1])
-with nav_left:
-    logo_col, name_col = st.columns([1, 8])
-    with logo_col:
-        try:
-            st.image(LOGO_PATH, width=36)
-        except Exception:
-            st.write("")
-    with name_col:
-        st.markdown("# AirBets")
-with nav_right:
-    st.markdown("<br>", unsafe_allow_html=True)
-    profile, settings = st.columns(2)
-    with profile:
-        st.button("Profile", key="nav_profile")
-    with settings:
-        st.button("Settings", key="nav_settings")
-
-st.markdown("---")
+st.title('AirBets Dashboard')
+st.markdown('---')
 
 # ---- Category filter ----
 categories = get_bet_categories()

@@ -12,7 +12,7 @@ st.markdown("---")
 if not st.session_state.get('logged_in'):
     st.warning("Please log in to view friends activity.")
     if st.button("← Back to Dashboard"):
-        st.switch_page("app.py")
+        st.switch_page("home.py")
     st.stop()
 
 user_id = st.session_state.get('username', 'user1')
@@ -34,4 +34,4 @@ else:
         display_friends_activity_card(bet)
 
 if st.button("← Back to Dashboard"):
-    st.switch_page("app.py")
+    st.switch_page("home.py")

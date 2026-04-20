@@ -13,7 +13,7 @@ st.set_page_config(layout="wide", page_title="Profile & Trade Summary - AirBets"
 if not st.session_state.get('logged_in'):
     st.warning("Please log in to view your profile and place bets.")
     if st.button("← Back to Dashboard"):
-        st.switch_page("app.py")
+        st.switch_page("home.py")
     st.stop()
 
 user_id = st.session_state.get('username', 'user1')
@@ -22,10 +22,7 @@ try:
 except ValueError:
     st.error("Profile not found.")
     if st.button("← Back to Dashboard"):
-        st.switch_page("app.py")
-    st.stop()
-
-st.title("Profile & Trade Summary")
+            st.switch_page("home.py")
 
 left, right = st.columns([2, 3])
 with left:
@@ -62,4 +59,4 @@ else:
     st.info("No friend bets available right now.")
 
 if st.button("← Back to Dashboard"):
-    st.switch_page("app.py")
+    st.switch_page("home.py")

@@ -4,10 +4,10 @@
 
 ## Current state
 
-- The app uses `app.py` as the main Streamlit entrypoint, with supplemental page scripts under `pages/` for alternate flows like the individual bet detail page, AI Advice, and Friends Activity.
+- The app uses `home.py` as the main Streamlit entrypoint, with supplemental page scripts under `pages/` for alternate flows like the individual bet detail page, AI Advice, and Friends Activity.
 - The current UI includes a mock login flow, a category-filterable bet dashboard, and a profile/trade summary view.
 - Backend helpers in `modules.py` include `compute_trade_metrics`, `display_trade_summary`, and other display helpers, while `data_fetcher.py` currently returns a mix of local fallback data and BigQuery-backed query logic.
-- Unit tests are available in `tests/`; `pytest` currently passes with the repository's existing coverage.
+- Unit tests and E2E coverage are available in `tests/`, including new navigation journeys under `tests/e2e/navigation/`.
 
 
 ## Our Team
@@ -63,7 +63,7 @@ pip install -r requirements.txt
 Run the following command to run the app locally. Follow the URL that is outputted, or in the Cloud Shell Editor, go to the upper right corner and hover over the icons until you find "Web Preview". Then click on "Preview on port 8080." You should see the app!
 
 ```shell
-streamlit run app.py
+streamlit run home.py
 ```
 
 **Note:** When you make changes, you just
@@ -113,7 +113,7 @@ After you are assigned a task in the project, how do you actually make the chang
 1. Change into your team's repository in Cloud Shell using `cd`.
 2. Run `git pull --rebase` to pull in any of your teammates changes.
 3. Make changes to the code in Cloud Shell Editor.
-4. Run `streamlit run app.py` to see the changes in action (Step 2 above). Don't use CTRL-C and let this command continuously run.
+4. Run `streamlit run home.py` to see the changes in action (Step 2 above). Don't use CTRL-C and let this command continuously run.
 5. Continue to make changes and refresh the web page with the app to see the new changes.
 6. When you are ready to be done, use CTRL-C to stop the `streamlit run` command.
 7. Check that your changes work in a container by running `./run-streamlit.sh` and make sure you see your changes.
