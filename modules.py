@@ -110,6 +110,10 @@ def display_individual_bet_summary(
         no_percent (float): Implied probability % for No.
         rules (str): Description / rules text for the bet.
     """
+    if not st.session_state.get('logged_in') or not st.session_state.get('username'):
+        st.warning("Please log in to place bets.")
+        return
+
     component_value = _bet_summary_component(
         bet_id=bet_id,
         bet_name=bet_name,

@@ -118,6 +118,18 @@ class TestDisplayIndividualBetSummary(unittest.TestCase):
         self.assertEqual(kwargs["no_percent"], "90")
         self.assertEqual(kwargs["rules"], "Test rules")
 
+    @patch("modules.st.warning")
+    @patch("modules._bet_summary_component")
+    @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)
+    def test_prevents_betting_when_not_logged_in(self, mock_session_state, mock_component, mock_warning):
+        """The bet summary should not render when the user is not logged in."""
+        mock_session_state.get.side_effect = lambda key, default=None: False
+
+        call_display()
+
+        mock_component.assert_not_called()
+        mock_warning.assert_called_once_with("Please log in to place bets.")
+
 
     @patch("modules.st.toast")
     @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)

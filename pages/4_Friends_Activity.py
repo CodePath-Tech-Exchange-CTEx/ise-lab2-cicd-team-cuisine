@@ -9,6 +9,12 @@ st.title("Friends")
 st.write("See what your crew is betting on")
 st.markdown("---")
 
+if not st.session_state.get('logged_in'):
+    st.warning("Please log in to view friends activity.")
+    if st.button("← Back to Dashboard"):
+        st.switch_page("app.py")
+    st.stop()
+
 user_id = st.session_state.get('username', 'user1')
 activity = get_friends_activity(user_id)
 

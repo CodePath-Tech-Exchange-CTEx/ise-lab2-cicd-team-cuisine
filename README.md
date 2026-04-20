@@ -82,6 +82,20 @@ following command to build the container and start the server locally.
 ```
 **Note:** This also outputs the same local URL that the previous command output. The only difference is that instead of running the webapp on *your* Cloud Shell, it is running it *within a Docker container*. Don't worry too much about understanding this now, but **if this command fails, your automatic deployment through GitHub Actions will also fail**.
 
+## Local deployment health checks
+
+To verify deployment-related artifacts and live service availability, run:
+
+```shell
+python3 -m pytest tests/deployment -q
+```
+
+If you want to validate a deployed live URL, set `LIVE_URL` first:
+
+```shell
+LIVE_URL=https://your-app-url pytest tests/deployment/test_deployment_smoke.py -q
+```
+
 ## Step 4: Manual deployment.
 
 First, make sure someone in your team has gone through the steps in SETUP.md. Make sure you have ***Owners*** permission on the GCP project in IAM.

@@ -7,6 +7,8 @@ import datetime
 import decimal
 
 from data_fetcher import (
+    create_user,
+    get_user_friends,
     get_user_trades,
     get_bet_data,
     process_bet_transaction,
@@ -250,6 +252,19 @@ class TestDataFetcherSimpleHelpers(unittest.TestCase):
     def test_get_user_profile_missing_user(self):
         with self.assertRaises(ValueError):
             get_user_profile('unknown_user')
+
+    def test_get_user_friends_returns_profiles(self):
+        friends = get_user_friends('user1')
+        self.assertIsInstance(friends, list)
+        self.assertTrue(all('username' in friend for friend in friends))
+        self.assertTrue(all('full_name' in friend for friend in friends))
+
+    def test_create_user_adds_account(self):
+        new_user_id = create_user('new_test_user', full_name='New Test', date_of_birth='1995-01-01')
+        self.assertEqual(new_user_id, 'new_test_user')
+        profile = get_user_profile(new_user_id)
+        self.assertEqual(profile['username'], 'new_test_user')
+        self.assertEqual(profile['full_name'], 'New Test')
 
     def test_get_user_posts_returns_list(self):
         posts = get_user_posts('user1')

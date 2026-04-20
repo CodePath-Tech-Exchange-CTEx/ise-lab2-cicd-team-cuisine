@@ -17,30 +17,81 @@ from modules import (
     filter_bets_by_category,
 )
 from data_fetcher import (
+    create_user,
     get_bet_data,
+    get_user_friends,
     get_user_posts,
     get_genai_advice,
+    get_user_id_by_username,
     get_user_profile,
     get_user_sensor_data,
     get_user_workouts,
     get_user_trades,
 )
 
-userId = 'user_1'  # fallback when no username has been entered
+userId = 'user1'  # fallback when no username has been entered
 
 
 def login():
-    """Simple mock login using session state."""
+    """Simple mock login and sign-up using session state."""
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
     if not st.session_state.logged_in:
-        st.title('Welcome to SDS!')
-        st.subheader('Please log in')
-        username = st.text_input('Username')
-        password = st.text_input('Password', type='password')
-        if st.button('Log in'):
-            st.session_state.logged_in = True
-            st.session_state.username = username or userId
+        st.title('Welcome to Airbets!')
+        st.subheader('Please log in or sign up')
+
+        auth_mode = st.radio(
+            'Auth mode',
+            ['Log in', 'Sign up'],
+            horizontal=True,
+            key='auth_mode',
+        )
+
+        if auth_mode == 'Sign up':
+            username = st.text_input('Username', key='signup_username')
+            full_name = st.text_input('Full name', key='signup_full_name')
+            date_of_birth = st.text_input('Date of birth (YYYY-MM-DD)', key='signup_dob')
+            if st.button('Create account'):
+                if not username:
+                    st.error('Username is required to create an account.')
+                else:
+                    existing_user_id = get_user_id_by_username(username)
+                    if existing_user_id:
+                        st.warning('That username already exists; logging you in instead.')
+                        st.session_state.username = existing_user_id
+                        st.session_state.logged_in = True
+                    else:
+                        try:
+                            new_user_id = create_user(
+                                username.strip(),
+                                full_name=full_name.strip() if full_name else username.strip().title(),
+                                date_of_birth=date_of_birth.strip() if date_of_birth else '2000-01-01',
+                            )
+                            st.session_state.logged_in = True
+                            st.session_state.username = new_user_id
+                            st.session_state.next_page = 'profile'
+                            st.success('Account created successfully.')
+                        except ValueError as err:
+                            st.error(str(err))
+                return False
+        else:
+            username = st.text_input('Username', key='login_username')
+            password = st.text_input('Password', type='password', key='login_password')
+            if st.button('Log in'):
+                if username:
+                    user_id = get_user_id_by_username(username)
+                    if user_id is None:
+                        user_id = create_user(
+                            username.strip(),
+                            full_name=username.strip().title(),
+                            date_of_birth='2000-01-01',
+                        )
+                    st.session_state.logged_in = True
+                    st.session_state.username = user_id
+                else:
+                    st.session_state.logged_in = True
+                    st.session_state.username = userId
+                return False
         return False
     return True
 
@@ -84,19 +135,21 @@ if st.session_state.get("show_individual"):
         st.session_state.show_individual = False
         st.rerun()
     st.markdown("---")
-    # Fetch selected bet from session state or fallback to default
-    bet_id = st.session_state.get("selected_bet_id", "bet001")
-    bet = get_bet_data(bet_id)
+    # Fetch selected bet from session state or fallback to the first available bet
+    bet_id = st.session_state.get("selected_bet_id")
+    if not bet_id:
+        available_bets = get_available_bets()
+        bet_id = available_bets[0]["bet_id"] if available_bets else None
+    bet = get_bet_data(bet_id) if bet_id else None
     if bet:
         display_individual_bet_summary(
             bet_id=bet_id,
             **bet
         )
     else:
-        st.error("Could not find data for bet with ID 'bet001'.")
+        st.error("Could not find a valid bet to show in the individual bet view.")
     st.stop()
 
-# Columns fill top-to-bottom; minimal gap between cards
 st.markdown(
     """
     <style>
@@ -139,15 +192,16 @@ else:
 # first and then renders either the home feed or the profile/trade page.
 if __name__ == '__main__':
     if login():
+        if st.session_state.get('next_page') == 'profile':
+            st.session_state.next_page = None
+            st.switch_page("pages/5_Profile.py")
+
         page = st.sidebar.radio(
             'Navigation', ['Home', 'Friends Activity', 'Profile / Trade Summary']
         )
         if page == 'Home':
             pass
         elif page == 'Friends Activity':
-            st.switch_page("pages/2_Friends_Activity.py")
+            st.switch_page("pages/4_Friends_Activity.py")
         elif page == 'Profile / Trade Summary':
-            st.title('Profile & Trade Summary')
-            uid = st.session_state.get('username', userId)
-            trades = get_user_trades(uid)
-            display_trade_summary(trades)
+            st.switch_page("pages/5_Profile.py")

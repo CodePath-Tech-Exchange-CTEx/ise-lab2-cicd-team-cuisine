@@ -16,6 +16,8 @@ try:
 except ImportError:
     bigquery = None
 
+from data.bets import get_available_bets
+
 users = {
     'user1': {
         'full_name': 'Remi',
@@ -46,6 +48,8 @@ users = {
         'friends': ['user1', 'user3'],
     },
 }
+
+LOCAL_ACTIVE_PURCHASED_BETS = []
 
 
 def get_user_sensor_data(user_id, workout_id):
@@ -108,8 +112,20 @@ def get_user_trades(user_id):
     Combines records from ActivePurchasedBets and PastUserBets.
     """
     if bigquery is None:
-        print("google-cloud-bigquery is not installed.")
-        return []
+        trades = []
+        for record in LOCAL_ACTIVE_PURCHASED_BETS:
+            if record['UserID'] != user_id:
+                continue
+            bet = get_bet_data(record['BetID']) or {}
+            trades.append({
+                'trade_id': record.get('BetID', 'N/A'),
+                'symbol': bet.get('bet_name', 'Unknown Bet'),
+                'action': 'BUY YES' if record['UserTookYes'] else 'BUY NO',
+                'quantity': 1,
+                'price': float(record['WagerAmount']),
+                'timestamp': 'N/A',
+            })
+        return trades
 
     client = bigquery.Client()
     query = """
@@ -167,9 +183,53 @@ def process_bet_transaction(user_id, bet_id, user_took_yes, wager_amount, mode='
     if user_id not in users:
         return False, f"User '{user_id}' not found. Please log in with a valid account."
 
-    if bigquery is None:
-        print("google-cloud-bigquery is not installed.")
-        return False, "Database not available."
+    project_id = os.environ.get('GCP_PROJECT')
+    if bigquery is None or not project_id:
+        wager_decimal = decimal.Decimal(str(wager_amount))
+        bet_display = f" '{bet_name}'" if bet_name else " this bet"
+        position_str = "Yes" if user_took_yes else "No"
+
+        existing = next(
+            (record for record in LOCAL_ACTIVE_PURCHASED_BETS
+             if record['UserID'] == user_id and record['BetID'] == bet_id and record['UserTookYes'] == user_took_yes),
+            None,
+        )
+        existing_amount = decimal.Decimal(str(existing['WagerAmount'])) if existing else decimal.Decimal('0.0')
+
+        opposite = next(
+            (record for record in LOCAL_ACTIVE_PURCHASED_BETS
+             if record['UserID'] == user_id and record['BetID'] == bet_id and record['UserTookYes'] != user_took_yes),
+            None,
+        )
+
+        if mode == 'Sell':
+            if not existing:
+                return False, f"You do not own the '{position_str}' position on{bet_display} to sell."
+            if existing_amount < wager_decimal:
+                return False, f"You cannot sell more than you own (${existing_amount:.2f}) of the '{position_str}' position on{bet_display}."
+
+            new_amount = existing_amount - wager_decimal
+            if new_amount == 0:
+                LOCAL_ACTIVE_PURCHASED_BETS.remove(existing)
+            else:
+                existing['WagerAmount'] = str(new_amount)
+            return True, f"Successfully sold ${wager_decimal:.2f} of the '{position_str}' position on{bet_display}."
+
+        if opposite:
+            return False, f"You cannot buy this position on{bet_display} as you already own the opposite position."
+
+        if existing:
+            new_amount = existing_amount + wager_decimal
+            existing['WagerAmount'] = str(new_amount)
+            return True, f"Successfully added ${wager_decimal:.2f} to your existing '{position_str}' wager on{bet_display}."
+
+        LOCAL_ACTIVE_PURCHASED_BETS.append({
+            'UserID': user_id,
+            'BetID': bet_id,
+            'UserTookYes': user_took_yes,
+            'WagerAmount': str(wager_decimal),
+        })
+        return True, f"Successfully purchased the '{position_str}' position on{bet_display} for ${wager_decimal:.2f}."
 
     client = bigquery.Client()
     project_id = os.environ.get('GCP_PROJECT')
@@ -282,6 +342,53 @@ def get_user_profile(user_id):
     return users[user_id]
 
 
+def get_user_id_by_username(username):
+    """Return a local user id from a username or direct user id lookup."""
+    if not username:
+        return None
+    username = username.strip()
+    if username in users:
+        return username
+    for user_id, profile in users.items():
+        if profile.get('username') == username:
+            return user_id
+    return None
+
+
+def create_user(username, full_name=None, date_of_birth=None, friends=None):
+    """Create a simple local user profile for signup and testing."""
+    if not username or not username.strip():
+        raise ValueError('Username is required.')
+    normalized_username = username.strip()
+    if get_user_id_by_username(normalized_username):
+        raise ValueError('Username already exists.')
+
+    users[normalized_username] = {
+        'full_name': full_name or normalized_username.title(),
+        'username': normalized_username,
+        'date_of_birth': date_of_birth or '2000-01-01',
+        'profile_image': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Puma_shoes.jpg',
+        'friends': friends or [],
+    }
+    return normalized_username
+
+
+def get_user_friends(user_id):
+    """Return a list of friend profiles for the given user."""
+    profile = get_user_profile(user_id)
+    friends = []
+    for friend_id in profile.get('friends', []):
+        if friend_id in users:
+            friend_profile = users[friend_id]
+            friends.append({
+                'user_id': friend_id,
+                'username': friend_profile['username'],
+                'full_name': friend_profile['full_name'],
+                'profile_image': friend_profile.get('profile_image'),
+            })
+    return friends
+
+
 def get_user_posts(user_id):
     """Returns a list of a user's posts.
 
@@ -324,16 +431,28 @@ def get_genai_advice(user_id):
 
 
 def get_bet_data(bet_id):
-    """Retrieves data for a specific bet from the ISE dataset in BigQuery.
+    """Retrieves data for a specific bet from BigQuery or local fallback data.
     
     Returns a dictionary with keys corresponding to the arguments 
     of display_individual_bet_summary, or None if the bet is not found.
     """
-    if bigquery is None:
-        print("google-cloud-bigquery is not installed.")
+    project_id = os.environ.get('GCP_PROJECT')
+    if bigquery is None or not project_id:
+        available = get_available_bets()
+        for bet in available:
+            if bet.get('bet_id') == bet_id:
+                return {
+                    'bet_name': bet['bet_name'],
+                    'yes_value': float(bet['yes_value']),
+                    'no_value': float(bet['no_value']),
+                    'yes_percent': float(bet['yes_percent']),
+                    'no_percent': float(bet['no_percent']),
+                    'rules': bet['rules'],
+                    'bet_image_link': bet['bet_image_link'],
+                }
         return None
 
-    project_id = os.environ.get('GCP_PROJECT')
+    client = bigquery.Client()
     if not project_id:
         print("Warning: GCP_PROJECT environment variable not set. Using default project for BigQuery.")
         table_name = '`ISE.Bets`'
