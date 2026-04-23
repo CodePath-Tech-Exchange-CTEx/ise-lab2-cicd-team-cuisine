@@ -70,7 +70,7 @@ and pages ready for the available-bets dashboard.
 | **Tests** | `tests/` | `test_*.py` only. Run with `pytest tests/` from project root. |
 | **Streamlit pages** | `pages/` | One file per page, e.g. `1_Available_bets.py`. |
 | **Custom HTML components** | `custom_components/` | HTML used by `modules.py` via `internals.create_component()`. |
-| **App entrypoint** | `app.py` | Run with `streamlit run app.py`. |
+| **App entrypoint** | `home.py` | Run with `streamlit run home.py`. |
 | **Reusable UI logic** | `modules.py` | Display helpers (e.g. bet card). |
 | **Dependencies** | `requirements/base.txt`, `requirements/dev.txt` | Root `requirements.txt` points at base. Install dev with `pip install -r requirements/dev.txt` after base. |
 

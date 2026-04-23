@@ -14,4 +14,4 @@ COPY . ./
 RUN pip install -r requirements.txt
 
 # The main command to run when the container starts.
-ENTRYPOINT ["streamlit", "run", "app.py"]
+ENTRYPOINT ["streamlit", "run", "home.py"]

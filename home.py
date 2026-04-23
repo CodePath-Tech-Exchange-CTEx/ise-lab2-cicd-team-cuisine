@@ -1,10 +1,35 @@
 #############################################################################
-# app.py — Compatibility shim for legacy tests and imports.
+# app.py — Dashboard: navbar, category filter (display only), grid of bet cards.
 #############################################################################
 
+import base64
 import streamlit as st
 
-from data_fetcher import create_user, get_user_id_by_username
+from data import get_available_bets
+from data.bets import get_bet_categories
+
+from modules import (
+    display_post,
+    display_comment_thread,
+    display_genai_advice,
+    display_individual_bet_summary,
+    display_recent_workouts,
+    display_trade_summary,
+    filter_bets_by_category,
+    render_sidebar,
+)
+from data_fetcher import (
+    create_user,
+    get_bet_data,
+    get_user_friends,
+    get_user_posts,
+    get_genai_advice,
+    get_user_id_by_username,
+    get_user_profile,
+    get_user_sensor_data,
+    get_user_workouts,
+    get_user_trades,
+)
 
 userId = 'user1'  # fallback when no username has been entered
 
@@ -19,14 +44,14 @@ def _initialize_session_state():
 
 
 def login():
-    """Legacy login helper used by old unit tests."""
+    """Legacy login helper for backward-compatible tests."""
     _initialize_session_state()
 
     auth_mode = st.radio(
         'Auth mode',
         ['Log in', 'Sign up'],
         horizontal=True,
-        key='modal_auth_mode',
+        key='login_auth_mode',
     )
 
     if auth_mode == 'Sign up':
@@ -76,49 +101,9 @@ def login():
                 st.session_state.username = userId
             st.session_state.show_auth_modal = False
             st.success('Welcome back')
+            st.experimental_rerun()
 
     return False
-#############################################################################
-# app.py — Dashboard: navbar, category filter (display only), grid of bet cards.
-#############################################################################
-
-import base64
-import streamlit as st
-
-from data import get_available_bets
-from data.bets import get_bet_categories
-
-from modules import (
-    display_post,
-    display_genai_advice,
-    display_individual_bet_summary,
-    display_recent_workouts,
-    display_trade_summary,
-    filter_bets_by_category,
-)
-from data_fetcher import (
-    create_user,
-    get_bet_data,
-    get_user_friends,
-    get_user_posts,
-    get_genai_advice,
-    get_user_id_by_username,
-    get_user_profile,
-    get_user_sensor_data,
-    get_user_workouts,
-    get_user_trades,
-)
-
-userId = 'user1'  # fallback when no username has been entered
-
-
-def _initialize_session_state():
-    if 'logged_in' not in st.session_state:
-        st.session_state.logged_in = False
-    if 'show_auth_modal' not in st.session_state:
-        st.session_state.show_auth_modal = False
-    if 'auth_mode' not in st.session_state:
-        st.session_state.auth_mode = 'Log in'
 
 
 def render_auth_modal():
@@ -157,6 +142,7 @@ def render_auth_modal():
                         st.session_state.next_page = 'profile'
                         st.session_state.show_auth_modal = False
                         st.success('Account created successfully.')
+                        st.experimental_rerun()
                     except ValueError as err:
                         st.error(str(err))
     else:
@@ -178,11 +164,13 @@ def render_auth_modal():
                 st.session_state.username = userId
             st.session_state.show_auth_modal = False
             st.success('Welcome back')
+            st.experimental_rerun()
 
-
-st.set_page_config(layout="wide", page_title="Home", page_icon="🏠")
 
 LOGO_PATH = "static/images/airbets-logo.svg"
+
+st.set_page_config(layout="wide", page_title="Home", page_icon=LOGO_PATH)
+
 COLS_PER_ROW = 4
 
 # Navbar: one row, logo + name left, Profile right
@@ -212,7 +200,6 @@ def render_post_creator(user_id):
                     'image': None,
                 })
                 st.success("Post created successfully.")
-                st.session_state.new_post_content = ""
 
     st.markdown("### Recent posts")
     if st.session_state.user_posts:
@@ -272,7 +259,11 @@ def render_topbar():
                 st.session_state.show_auth_modal = True
 
     if st.session_state.show_auth_modal:
-        with st.modal('Account'):
+        with st.container():
+            if st.button('Close', key='close_auth_modal'):
+                st.session_state.show_auth_modal = False
+                st.rerun()
+            st.markdown('---')
             render_auth_modal()
 
 
@@ -292,6 +283,30 @@ def render_home():
                 bet_id=bet_id,
                 **bet
             )
+            st.markdown('---')
+            comments = [
+                {
+                    'author': 'AI Agent',
+                    'timestamp': '2024-01-02 08:30',
+                    'avatar': '🤖',
+                    'content': 'This market is heating up — consider a smaller position than usual.',
+                    'replies': [
+                        {
+                            'author': 'Trader Sam',
+                            'timestamp': '2024-01-02 09:10',
+                            'avatar': '🧑‍💼',
+                            'content': 'I like the rules and the yes probability. The chart looks bearish but still within range.',
+                        },
+                    ],
+                },
+                {
+                    'author': 'Market Forum',
+                    'timestamp': '2024-01-02 09:45',
+                    'avatar': '🗣️',
+                    'content': 'What’s everyone’s read on the liquidity risk here? Keep replies focused on the market drivers.',
+                },
+            ]
+            display_comment_thread(comments)
         else:
             st.error('Could not find a valid bet to show in the individual bet view.')
         return
@@ -345,6 +360,8 @@ def render_home():
 
 def main():
     _initialize_session_state()
+    render_sidebar()
+    st.title("AirBets")
     render_topbar()
 
     if st.session_state.get('next_page') == 'profile':
@@ -354,5 +371,4 @@ def main():
     render_home()
 
 
-if st.runtime.exists() or __name__ == '__main__':
-    main()
+main()

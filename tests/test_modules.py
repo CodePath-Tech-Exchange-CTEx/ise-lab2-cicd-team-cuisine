@@ -5,6 +5,8 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch, MagicMock
 
+import streamlit as st
+
 from modules import (
     display_post,
     display_individual_bet_summary,
@@ -20,6 +22,8 @@ from modules import (
 
 def call_display(**kwargs):
     """Call display_individual_bet_summary with safe defaults, overridden by kwargs."""
+    st.session_state.logged_in = True
+    st.session_state.username = 'test_user'
     defaults = dict(
         bet_id="test_bet",
         bet_name="Test Bet",
@@ -117,6 +121,18 @@ class TestDisplayIndividualBetSummary(unittest.TestCase):
         self.assertEqual(kwargs["yes_percent"], "10")
         self.assertEqual(kwargs["no_percent"], "90")
         self.assertEqual(kwargs["rules"], "Test rules")
+
+    @patch("modules.st.warning")
+    @patch("modules._bet_summary_component")
+    @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)
+    def test_prevents_betting_when_not_logged_in(self, mock_session_state, mock_component, mock_warning):
+        """The bet summary should not render when the user is not logged in."""
+        mock_session_state.get.side_effect = lambda key, default=None: False
+
+        call_display()
+
+        mock_component.assert_not_called()
+        mock_warning.assert_called_once_with("Please log in to place bets.")
 
 
     @patch("modules.st.toast")

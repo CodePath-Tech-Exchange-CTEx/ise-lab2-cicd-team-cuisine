@@ -2,13 +2,14 @@
 """ AI Advice page:  """
 import streamlit as st
 import os
-from modules import display_genai_advice
+from modules import display_genai_advice, render_sidebar
 
 
 def main():
     
     # ---- Page config ----
     st.set_page_config(layout="wide", page_title="AI Advisor — AirBets")
+    render_sidebar()
 
     # ---- Inline styles ----
     st.markdown("""
@@ -116,29 +117,6 @@ def main():
     .bubble-sender.you { color: #ff4b4b; }
     </style>
     """, unsafe_allow_html=True)
-
-    # ---- NavBar ----
-    LOGO_PATH = "static/images/airbets-logo.svg"
-
-    nav_left, nav_right = st.columns([3, 1])
-    with nav_left:
-        logo_col, name_col = st.columns([1, 8])
-        with logo_col:
-            try:
-                st.image(LOGO_PATH, width=36)
-            except Exception:
-                st.write("")
-        with name_col:
-            st.markdown("# AirBets")
-    with nav_right:
-        st.markdown("<br>", unsafe_allow_html=True)
-        profile_col, settings_col = st.columns(2)
-        with profile_col:
-            st.button("Profile", key="nav_profile")
-        with settings_col:
-            st.button("Settings", key="nav_settings")
-
-    st.markdown("---")
 
     # ---- Page heading ---
     st.markdown("## AI Advisor")
