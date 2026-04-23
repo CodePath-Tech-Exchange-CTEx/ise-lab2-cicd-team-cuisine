@@ -25,6 +25,7 @@ users = {
         'date_of_birth': '1990-01-01',
         'profile_image': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Puma_shoes.jpg',
         'friends': ['user2', 'user3', 'user4'],
+        'balance': 10000.0,
     },
     'user2': {
         'full_name': 'Blake',
@@ -369,6 +370,7 @@ def create_user(username, full_name=None, date_of_birth=None, friends=None):
         'date_of_birth': date_of_birth or '2000-01-01',
         'profile_image': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Puma_shoes.jpg',
         'friends': friends or [],
+        'balance': 10000.0,
     }
     return normalized_username
 
@@ -394,17 +396,39 @@ def get_user_posts(user_id):
 
     This function currently returns random data. You will re-write it in Unit 3.
     """
-    content = random.choice([
-        'Had a great workout today!',
-        'The AI really motivated me to push myself further, I ran 10 miles!',
-    ])
-    return [{
-        'user_id': user_id,
-        'post_id': 'post1',
-        'timestamp': '2024-01-01 00:00:00',
-        'content': content,
-        'image': None,
-    }]
+    user_posts = [
+        {
+            'user_id': user_id,
+            'post_id': 'post1',
+            'timestamp': '2024-01-01 00:00:00',
+            'content': random.choice([
+                'Excited to start trading in the new dashboard!',
+                'Paper trading feels great — not risking real cash yet.',
+                'Checking out the latest AI insights on the market.',
+            ]),
+            'image': None,
+        }
+    ]
+
+    # Add some AI agent posts to make the feed feel active.
+    ai_posts = [
+        {
+            'user_id': 'AI Agent',
+            'post_id': 'ai1',
+            'timestamp': '2024-01-02 08:30:00',
+            'content': 'AI Agent: Volatility is rising in crypto markets. Monitor your positions closely.',
+            'image': None,
+        },
+        {
+            'user_id': 'MarketBot',
+            'post_id': 'ai2',
+            'timestamp': '2024-01-02 09:15:00',
+            'content': 'MarketBot: The odds for the 2026 World Cup semifinal feel skewed. Diversify across sports bets.',
+            'image': None,
+        },
+    ]
+
+    return user_posts + ai_posts
 
 
 def get_genai_advice(user_id):

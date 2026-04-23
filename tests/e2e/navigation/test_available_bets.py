@@ -9,11 +9,11 @@ def test_available_bets_navigation_shows_bet_cards():
         page = browser.new_page()
 
         login(page)
-        page.locator('a:has-text("Available bets")').first.click()
+        page.locator('button:has-text("📈 Marketplace")').first.click()
 
-        page.get_by_text('Available bets').wait_for(timeout=15000)
-        assert page.get_by_text('Available bets').is_visible()
-        assert page.get_by_role('button', name='View details').count() >= 1
+        page.get_by_text('AirBets Dashboard').wait_for(timeout=15000)
+        assert page.get_by_text('AirBets Dashboard').is_visible()
+        assert page.get_by_role('button', name='View').count() >= 1
         assert page.get_by_text('Yes $').count() >= 1 or page.get_by_text('No $').count() >= 1
 
         browser.close()

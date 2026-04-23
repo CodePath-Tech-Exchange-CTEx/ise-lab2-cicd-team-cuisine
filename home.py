@@ -10,11 +10,13 @@ from data.bets import get_bet_categories
 
 from modules import (
     display_post,
+    display_comment_thread,
     display_genai_advice,
     display_individual_bet_summary,
     display_recent_workouts,
     display_trade_summary,
     filter_bets_by_category,
+    render_sidebar,
 )
 from data_fetcher import (
     create_user,
@@ -99,6 +101,7 @@ def login():
                 st.session_state.username = userId
             st.session_state.show_auth_modal = False
             st.success('Welcome back')
+            st.experimental_rerun()
 
     return False
 
@@ -139,6 +142,7 @@ def render_auth_modal():
                         st.session_state.next_page = 'profile'
                         st.session_state.show_auth_modal = False
                         st.success('Account created successfully.')
+                        st.experimental_rerun()
                     except ValueError as err:
                         st.error(str(err))
     else:
@@ -160,6 +164,7 @@ def render_auth_modal():
                 st.session_state.username = userId
             st.session_state.show_auth_modal = False
             st.success('Welcome back')
+            st.experimental_rerun()
 
 
 LOGO_PATH = "static/images/airbets-logo.svg"
@@ -195,7 +200,6 @@ def render_post_creator(user_id):
                     'image': None,
                 })
                 st.success("Post created successfully.")
-                st.session_state.new_post_content = ""
 
     st.markdown("### Recent posts")
     if st.session_state.user_posts:
@@ -256,6 +260,9 @@ def render_topbar():
 
     if st.session_state.show_auth_modal:
         with st.container():
+            if st.button('Close', key='close_auth_modal'):
+                st.session_state.show_auth_modal = False
+                st.rerun()
             st.markdown('---')
             render_auth_modal()
 
@@ -276,6 +283,30 @@ def render_home():
                 bet_id=bet_id,
                 **bet
             )
+            st.markdown('---')
+            comments = [
+                {
+                    'author': 'AI Agent',
+                    'timestamp': '2024-01-02 08:30',
+                    'avatar': '🤖',
+                    'content': 'This market is heating up — consider a smaller position than usual.',
+                    'replies': [
+                        {
+                            'author': 'Trader Sam',
+                            'timestamp': '2024-01-02 09:10',
+                            'avatar': '🧑‍💼',
+                            'content': 'I like the rules and the yes probability. The chart looks bearish but still within range.',
+                        },
+                    ],
+                },
+                {
+                    'author': 'Market Forum',
+                    'timestamp': '2024-01-02 09:45',
+                    'avatar': '🗣️',
+                    'content': 'What’s everyone’s read on the liquidity risk here? Keep replies focused on the market drivers.',
+                },
+            ]
+            display_comment_thread(comments)
         else:
             st.error('Could not find a valid bet to show in the individual bet view.')
         return
@@ -329,6 +360,8 @@ def render_home():
 
 def main():
     _initialize_session_state()
+    render_sidebar()
+    st.title("AirBets")
     render_topbar()
 
     if st.session_state.get('next_page') == 'profile':
@@ -338,5 +371,4 @@ def main():
     render_home()
 
 
-if st.runtime.exists() or __name__ == '__main__':
-    main()
+main()

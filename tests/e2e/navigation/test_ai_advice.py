@@ -10,7 +10,7 @@ def test_ai_advice_navigation():
 
         login(page)
 
-        page.locator('a:has-text("AI Advice")').first.click()
+        page.locator('button:has-text("🤖 AI Insights")').first.click()
 
         assert page.get_by_text("AI Advisor").wait_for(timeout=15000)
         assert page.get_by_text("AI Analysis").is_visible()

@@ -1,9 +1,11 @@
 import streamlit as st
 from data_fetcher import get_friends_activity
-from modules import display_friends_activity_card
+from modules import display_friends_activity_card, render_sidebar
 
 # Set page config for the individual page
 st.set_page_config(layout="wide", page_title="Friends Activity - AirBets")
+
+render_sidebar()
 
 st.title("Friends")
 st.write("See what your crew is betting on")

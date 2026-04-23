@@ -10,8 +10,11 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import importlib.util
-from data_fetcher import process_bet_transaction
+from data_fetcher import process_bet_transaction, get_user_profile
 import os
+
+# Hide Streamlit's default page navigation menu so only the custom sidebar is shown.
+st.set_option("client.showSidebarNavigation", False)
 
 _COMPONENT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "custom_components", "individual_bet_summary_component"))
 
@@ -53,6 +56,41 @@ def display_post(username, user_image, timestamp, content, post_image):
     st.write(content)
     if post_image:
         st.image(post_image)
+
+
+def _render_comment_card(comment, nested=False):
+    """Render a single comment card with optional nested indentation."""
+    indent_style = "margin-left: 1.5rem;" if nested else ""
+    avatar = comment.get('avatar', '💬')
+    st.markdown(
+        f"""
+        <div style="{indent_style} border:1px solid rgba(148,163,184,0.18); background: rgba(15,23,42,0.92); border-radius: 18px; padding: 18px; margin-bottom: 0.85rem;">
+            <div style="display:flex; align-items:center; gap: 0.85rem; flex-wrap:wrap;">
+                <div style="width:38px; height:38px; border-radius:50%; background:#2563eb; color:white; display:flex; align-items:center; justify-content:center; font-size:1rem;">{avatar}</div>
+                <div style="line-height:1.2; min-width:0;">
+                    <div style="font-weight:700; color:#f8fafc;">{comment['author']}</div>
+                    <div style="color:#94a3b8; font-size:0.85rem;">{comment['timestamp']}</div>
+                </div>
+                <div style="margin-left:auto; color:#60a5fa; font-size:0.88rem;">Reply</div>
+            </div>
+            <div style="margin-top:0.9rem; color:#e2e8f0; font-size:0.95rem; line-height:1.65;">{comment['content']}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def display_comment_thread(comments, title='Comment thread'):
+    """Render a forum-style comment thread."""
+    st.markdown(f"### {title}")
+    if not comments:
+        st.info('No comments yet. Start the conversation!')
+        return
+
+    for comment in comments:
+        _render_comment_card(comment)
+        for reply in comment.get('replies', []):
+            _render_comment_card(reply, nested=True)
 
 
 def compute_trade_metrics(trades_list):
@@ -232,3 +270,45 @@ def display_friends_activity_card(bet):
             st.session_state.selected_bet_id = bet['bet_id']
             st.session_state.show_individual = True
             st.switch_page("home.py")
+
+
+def render_sidebar():
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
+    if 'username' not in st.session_state:
+        st.session_state.username = 'user1'
+
+    with st.sidebar:
+        try:
+            st.image("static/images/airbets-logo.svg", width=48)
+        except Exception:
+            pass
+
+        st.markdown(
+            '<div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem;">'
+            '<span style="font-size:1.25rem; font-weight:700;">AirBets</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+
+        balance = 10000.0
+        if st.session_state.logged_in:
+            try:
+                profile = get_user_profile(st.session_state.username)
+                balance = float(profile.get('balance', balance))
+            except Exception:
+                balance = 10000.0
+
+        st.metric('Wallet balance', f'${balance:,.2f}')
+        st.markdown('---')
+
+        if st.button('🏠 Community', key='sidebar_community', use_container_width=True):
+            st.switch_page('home.py')
+        if st.button('📈 Marketplace', key='sidebar_marketplace', use_container_width=True):
+            st.switch_page('pages/1_Available_bets.py')
+        if st.button('🤖 AI Insights', key='sidebar_ai_insights', use_container_width=True):
+            st.switch_page('pages/3_AI_Advice.py')
+
+        st.markdown('---')
+        if st.button('👤 My Profile', key='sidebar_my_profile', use_container_width=True):
+            st.switch_page('pages/5_Profile.py')

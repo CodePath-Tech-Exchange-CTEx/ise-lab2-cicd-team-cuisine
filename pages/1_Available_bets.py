@@ -4,9 +4,11 @@ Dashboard: navbar (logo + AirBets | Profile, Settings) and grid of compact bet c
 import streamlit as st
 
 from data import get_available_bets, get_bet_categories
-from modules import display_individual_bet_summary
+from modules import display_individual_bet_summary, render_sidebar
 
 COLS_PER_ROW = 3
+
+render_sidebar()
 
 st.title('AirBets Dashboard')
 st.markdown('---')

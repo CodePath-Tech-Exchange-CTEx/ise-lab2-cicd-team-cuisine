@@ -6,9 +6,11 @@ from data_fetcher import (
     get_user_profile,
     get_user_trades,
 )
-from modules import display_friends_activity_card, display_trade_summary
+from modules import display_friends_activity_card, display_trade_summary, render_sidebar
 
 st.set_page_config(layout="wide", page_title="Profile & Trade Summary - AirBets")
+
+render_sidebar()
 
 if not st.session_state.get('logged_in'):
     st.warning("Please log in to view your profile and place bets.")
@@ -30,6 +32,7 @@ with left:
     st.subheader(profile.get('full_name', profile.get('username', 'Unknown')))
     st.caption(f"@{profile.get('username', '')}")
     st.write(f"Born: {profile.get('date_of_birth', 'Unknown')}")
+    st.metric("Paper balance", f"${profile.get('balance', 10000.0):,.2f}")
     st.markdown("---")
     st.markdown("### Friends list")
     friend_profiles = get_user_friends(user_id)
