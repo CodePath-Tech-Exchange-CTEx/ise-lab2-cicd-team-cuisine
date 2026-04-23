@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from ..common import login
@@ -18,3 +20,5 @@ def test_ai_advice_navigation():
         assert page.get_by_text("Risk Flag").is_visible()
 
         browser.close()
+
+"""

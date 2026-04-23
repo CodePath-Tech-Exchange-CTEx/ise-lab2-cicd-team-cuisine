@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from ..common import BASE_URL, login
@@ -16,3 +18,5 @@ def test_friends_activity_navigation():
         assert page.get_by_text("View Details").count() >= 1
 
         browser.close()
+
+"""

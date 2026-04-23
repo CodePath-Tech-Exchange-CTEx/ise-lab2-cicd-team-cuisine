@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from ..common import login
@@ -19,3 +21,5 @@ def test_category_filter_shows_only_crypto_bets():
         assert page.get_by_text("Will Democrats hold Senate majority after 2026 midterms?").count() == 0
 
         browser.close()
+
+"""
