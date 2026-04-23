@@ -125,15 +125,28 @@ class TestDisplayIndividualBetSummary(unittest.TestCase):
     @patch("modules.st.warning")
     @patch("modules._bet_summary_component")
     @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)
-    def test_prevents_betting_when_not_logged_in(self, mock_session_state, mock_component, mock_warning):
-        """The bet summary should not render when the user is not logged in."""
+    def test_displays_read_only_bet_summary_when_not_logged_in(self, mock_session_state, mock_component, mock_warning):
+        """The bet summary should render for guests but warn that betting requires login."""
         mock_session_state.get.side_effect = lambda key, default=None: False
 
         call_display()
 
-        mock_component.assert_not_called()
+        mock_component.assert_called_once()
         mock_warning.assert_called_once_with("Please log in to place bets.")
 
+    @patch("modules.st.toast")
+    @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)
+    @patch("modules.process_bet_transaction")
+    @patch("modules._bet_summary_component")
+    def test_submit_attempt_when_not_logged_in_shows_toast(self, mock_component, mock_process_bet, mock_session_state, mock_toast):
+        """Unauthenticated submit attempts should be blocked with a toast."""
+        mock_session_state.get.side_effect = lambda key, default=None: False
+        mock_component.return_value = {'action': 'submit_transaction', 'choice': 'Yes', 'amount': '50', 'mode': 'Buy'}
+
+        call_display()
+
+        mock_process_bet.assert_not_called()
+        mock_toast.assert_called_once_with("Please log in to place bets.", icon="❌")
 
     @patch("modules.st.toast")
     @patch("modules.st.session_state", new_callable=unittest.mock.PropertyMock)

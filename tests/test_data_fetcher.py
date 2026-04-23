@@ -16,6 +16,7 @@ from data_fetcher import (
     get_user_profile,
     get_user_posts,
     get_genai_advice,
+    users,
 )
 
 
@@ -242,6 +243,13 @@ class TestGetFriendsActivity(unittest.TestCase):
 
 class TestDataFetcherSimpleHelpers(unittest.TestCase):
     """Tests for simple helper methods in data_fetcher.py."""
+
+    def setUp(self):
+        self._saved_users = dict(users)
+
+    def tearDown(self):
+        users.clear()
+        users.update(self._saved_users)
 
     def test_get_user_profile_existing_user(self):
         profile = get_user_profile('user1')

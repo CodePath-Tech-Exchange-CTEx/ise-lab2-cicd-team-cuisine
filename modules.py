@@ -148,9 +148,9 @@ def display_individual_bet_summary(
         no_percent (float): Implied probability % for No.
         rules (str): Description / rules text for the bet.
     """
-    if not st.session_state.get('logged_in') or not st.session_state.get('username'):
+    logged_in = bool(st.session_state.get('logged_in') and st.session_state.get('username'))
+    if not logged_in:
         st.warning("Please log in to place bets.")
-        return
 
     component_value = _bet_summary_component(
         bet_id=bet_id,
@@ -166,6 +166,10 @@ def display_individual_bet_summary(
 
     # This block now receives real data from the component's frontend
     if isinstance(component_value, dict) and component_value.get('action') == 'submit_transaction':
+        if not logged_in:
+            st.toast("Please log in to place bets.", icon="❌")
+            return
+
         user_id = st.session_state.get('username', 'user1')
         user_took_yes = (component_value['choice'] == 'Yes')
         wager_amount = component_value['amount']
