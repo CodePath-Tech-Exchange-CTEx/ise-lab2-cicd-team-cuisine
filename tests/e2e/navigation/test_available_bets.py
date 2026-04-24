@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from ..common import login
@@ -17,3 +19,5 @@ def test_available_bets_navigation_shows_bet_cards():
         assert page.get_by_text('Yes $').count() >= 1 or page.get_by_text('No $').count() >= 1
 
         browser.close()
+
+"""

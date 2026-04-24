@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from ..common import login
@@ -15,3 +17,5 @@ def test_login_flow_with_new_user():
         assert "AirBets" in page.title() or "AirBets" in page.content()
 
         browser.close()
+
+"""

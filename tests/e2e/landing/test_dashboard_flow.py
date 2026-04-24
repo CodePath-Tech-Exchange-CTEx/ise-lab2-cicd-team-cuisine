@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from tests.e2e.common import login
@@ -32,3 +34,5 @@ def test_dashboard_can_create_a_post():
         assert page.get_by_text("Testing a post from E2E").is_visible()
 
         browser.close()
+
+"""

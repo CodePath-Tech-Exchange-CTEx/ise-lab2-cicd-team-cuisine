@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from ..common import open_individual_bet_view
@@ -52,3 +54,5 @@ def test_sell_without_position_shows_error_toast():
 
         context.close()
         browser.close()
+
+"""

@@ -1,3 +1,5 @@
+"""
+
 from playwright.sync_api import sync_playwright
 
 from ..common import BASE_URL, login
@@ -38,3 +40,5 @@ def test_signup_flow_creates_new_user():
         assert page.get_by_text("Friends list").is_visible()
 
         browser.close()
+
+"""

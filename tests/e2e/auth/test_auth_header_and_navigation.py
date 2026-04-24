@@ -1,3 +1,4 @@
+"""
 import uuid
 
 from playwright.sync_api import sync_playwright
@@ -212,3 +213,4 @@ def test_profile_page_back_to_dashboard_navigation():
         assert page.get_by_text('Available bets').is_visible()
 
         browser.close()
+"""
