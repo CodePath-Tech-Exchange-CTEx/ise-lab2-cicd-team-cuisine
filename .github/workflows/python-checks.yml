@@ -47,6 +47,8 @@ jobs:
     - name: Install Playwright Browsers
       run: |
         python -m playwright install --with-deps
-    - name: Test with pytest
+    - name: Start Streamlit app and test with pytest
       run: |
+        python -m streamlit run home.py --server.port 8080 --server.headless true &
+        sleep 5
         pytest
